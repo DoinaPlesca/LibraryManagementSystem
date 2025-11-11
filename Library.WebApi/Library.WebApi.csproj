@@ -32,4 +32,10 @@
       <ProjectReference Include="..\Library.Infrastructure\Library.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
 </Project>

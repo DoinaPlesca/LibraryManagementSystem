@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:14
@@ -20,14 +22,15 @@ services:
     build:
       context: .
       dockerfile: Library.WebApi/Dockerfile
-    container_name: library_api
+    container_name: library_webapi
+    restart: unless-stopped
+    depends_on:
+      - postgres
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - DB_CONNECTION_STRING=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     ports:
       - "5000:8080"
-    depends_on:
-      - postgres
     networks:
       - library_network
 
@@ -37,5 +40,6 @@ volumes:
   
 
 networks:
-  library_system_network:
+  library_network:
+    driver: bridge
 
