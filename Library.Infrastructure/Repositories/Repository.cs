@@ -1,14 +1,15 @@
 using Library.Core.Interfaces;
+using Library.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library.Infrastructure.Repositories;
 
 public class Repository<T> : IRepository<T> where T : class
 {
-    private readonly DbContext _context;
+    private readonly LibraryContext _context;
     private readonly DbSet<T> _dbSet;
 
-    public Repository(DbContext context)
+    public Repository(LibraryContext context)
     {
         _context = context;
         _dbSet = context.Set<T>();

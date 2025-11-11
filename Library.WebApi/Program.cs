@@ -9,8 +9,6 @@ using Library.Infrastructure.Seed;
 using Library.WebApi.Middleware;
 using Microsoft.EntityFrameworkCore;
 
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 var envPath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.FullName, ".env");

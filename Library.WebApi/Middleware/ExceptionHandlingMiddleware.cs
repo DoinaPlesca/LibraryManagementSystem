@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using FluentValidation;
 using Library.WebApi.Wrappers;
 using Library.Core.Exceptions;
 
@@ -31,26 +32,38 @@ public class ExceptionHandlingMiddleware
 
     private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var statusCode = exception switch
+        context.Response.ContentType = "application/json";
+
+        if (exception is ValidationException validationException)
         {
-            // You can define your own custom exceptions in Core
-            NotFoundException => (int)HttpStatusCode.NotFound,
-            BadRequestException => (int)HttpStatusCode.BadRequest,
-            _ => (int)HttpStatusCode.InternalServerError
+            context.Response.StatusCode = 400;
+            var response = new ApiResponse<IEnumerable<string>>
+            {
+                Success = false,
+                Message = "Validation failed",
+                Data = validationException.Errors.Select(e => e.ErrorMessage),
+                Status = 400
+            };
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            return;
+        }
+
+        context.Response.StatusCode = exception switch
+        {
+            NotFoundException => 404,
+            BadRequestException => 400,
+            _ => 500
         };
 
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = statusCode;
-
-        var response = new ApiResponse<string>
+        var genericResponse = new ApiResponse<string>
         {
             Success = false,
             Data = null,
             Message = exception.Message,
-            Status = statusCode
+            Status = context.Response.StatusCode
         };
 
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(genericResponse));
     }
 }
