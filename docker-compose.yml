@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: library_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - library_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  webapi:
+    build:
+      context: .
+      dockerfile: Library.WebApi/Dockerfile
+    container_name: library_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_CONNECTION_STRING=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    ports:
+      - "5000:8080"
+    depends_on:
+      - postgres
+    networks:
+      - library_network
+
+volumes:
+  postgres_data:
+  
+  
+
+networks:
+  library_system_network:
+
