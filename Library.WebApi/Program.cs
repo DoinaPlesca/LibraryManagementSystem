@@ -1,4 +1,6 @@
+using FluentValidation.AspNetCore;
 using Library.Core.Interfaces;
+using Library.Core.Mapping;
 using Library.Core.Services;
 using Library.Infrastructure.Data;
 using Library.Infrastructure.Interfaces;
@@ -6,6 +8,8 @@ using Library.Infrastructure.Repositories;
 using Library.Infrastructure.Seed;
 using Library.WebApi.Middleware;
 using Microsoft.EntityFrameworkCore;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +32,12 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IBorrowService, BorrowService>();
 
+
+builder.Services.AddAutoMapper(typeof(LibraryProfile));
+
+builder.Services
+    .AddFluentValidationAutoValidation()
+    .AddFluentValidationClientsideAdapters();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

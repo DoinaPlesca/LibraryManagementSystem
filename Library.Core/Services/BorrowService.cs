@@ -1,3 +1,5 @@
+using AutoMapper;
+using Library.Core.Dtos.Borrow;
 using Library.Core.Entities;
 using Library.Core.Exceptions;
 using Library.Core.Interfaces;
@@ -8,15 +10,16 @@ public class BorrowService : IBorrowService
 {
     private readonly IRepository<Book> _bookRepository;
     private readonly IRepository<BorrowRecord> _borrowRepository;
-
-    public BorrowService(IRepository<Book> bookRepository, IRepository<BorrowRecord> borrowRepository)
+    private readonly IMapper _mapper;
+    public BorrowService(IRepository<Book> bookRepository, IRepository<BorrowRecord> borrowRepository, IMapper mapper)
     {
         _bookRepository = bookRepository;
         _borrowRepository = borrowRepository;
+        _mapper = mapper;
     }
 
    
-    public async Task<string> BorrowBookAsync(string userName, int bookId)
+    public async Task<BorrowRecordDto> BorrowBookAsync(string userName, int bookId)
     {
         // check if book exists
         var book = await _bookRepository.GetByIdAsync(bookId);
@@ -45,12 +48,13 @@ public class BorrowService : IBorrowService
         await _bookRepository.SaveChangesAsync();
         await _borrowRepository.SaveChangesAsync();
 
-        return $"Book '{book.Title}' borrowed successfully by {userName}.";
+        borrowRecord.Book = book;
+        return _mapper.Map<BorrowRecordDto>(borrowRecord);
     }
 
-    
-    
-    public async Task<string> ReturnBookAsync(int borrowId)
+
+
+    public async Task<BorrowRecordDto> ReturnBookAsync(int borrowId)
     {
         // find the borrow record
         var borrowRecord = await _borrowRepository.GetByIdAsync(borrowId);
@@ -69,13 +73,14 @@ public class BorrowService : IBorrowService
         // update  record + book
         borrowRecord.ReturnDate = DateTime.UtcNow;
         book.AvailableCopies++;
-        
+
         _borrowRepository.Update(borrowRecord);
         _bookRepository.Update(book);
 
         await _borrowRepository.SaveChangesAsync();
         await _bookRepository.SaveChangesAsync();
 
-        return $"Book '{book.Title}' successfully returned (Borrow ID: {borrowId}).";
+        borrowRecord.Book = book;
+        return _mapper.Map<BorrowRecordDto>(borrowRecord);
     }
 }

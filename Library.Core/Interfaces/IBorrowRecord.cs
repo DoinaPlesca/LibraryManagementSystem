@@ -1,7 +1,9 @@
+using Library.Core.Dtos.Borrow;
+
 namespace Library.Core.Interfaces;
 
 public interface IBorrowService
 {
-    Task<string> BorrowBookAsync(string userName, int bookId);
-    Task<string> ReturnBookAsync(int borrowId);
+    Task<BorrowRecordDto> BorrowBookAsync(string userName, int bookId);
+    Task<BorrowRecordDto> ReturnBookAsync(int borrowId);
 }
