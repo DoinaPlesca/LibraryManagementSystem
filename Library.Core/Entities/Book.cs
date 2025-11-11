@@ -8,4 +8,5 @@ public class Book
     public int AuthorId { get; set; }
     public Author? Author { get; set; }
     public int AvailableCopies { get; set; }
+    public bool IsActive { get; set; } = true;
 }

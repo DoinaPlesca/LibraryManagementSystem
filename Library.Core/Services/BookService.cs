@@ -21,7 +21,9 @@ public class BookService : IBookService
     public async Task<IEnumerable<BookDto>> GetAllAsync()
     {
         var books = await _bookRepository.GetAllAsync();
-        return _mapper.Map<IEnumerable<BookDto>>(books);
+        var activeBooks = books.Where(b => b.IsActive); 
+        return _mapper.Map<IEnumerable<BookDto>>(activeBooks); 
+        
     }
 
     public async Task<BookDto> GetByIdAsync(int id)
@@ -66,14 +68,19 @@ public class BookService : IBookService
         return _mapper.Map<BookDto>(existing);
     }
 
+   
     public async Task<bool> DeleteAsync(int id)
     {
         var book = await _bookRepository.GetByIdAsync(id);
         if (book == null)
             throw new NotFoundException($"Book with ID {id} not found.");
 
-        _bookRepository.Delete(book);
+        book.IsActive = false; 
+
+        _bookRepository.Update(book);
         await _bookRepository.SaveChangesAsync();
+
         return true;
     }
+
 }
