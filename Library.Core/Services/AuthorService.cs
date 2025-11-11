@@ -5,13 +5,20 @@ namespace Library.Core.Services;
 
 public class AuthorService : IAuthorService
 {
-    public Task<IEnumerable<Author>> GetAllAsync()
+    private readonly IRepository<Author> _repository;
+
+    public AuthorService(IRepository<Author> repository)
     {
-        throw new NotImplementedException();
+        _repository = repository;
     }
 
-    public Task<Author> CreateAsync(Author author)
+    public async Task<IEnumerable<Author>> GetAllAsync()
+        => await _repository.GetAllAsync();
+
+    public async Task<Author> CreateAsync(Author author)
     {
-        throw new NotImplementedException();
+        await _repository.AddAsync(author);
+        await _repository.SaveChangesAsync();
+        return author;
     }
 }
