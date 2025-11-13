@@ -22,15 +22,14 @@ public class BookService : IBookService
 
     public async Task<IEnumerable<BookDto>> GetAllAsync()
     {
-        var books = await _bookRepository.GetAllAsync();
-        var activeBooks = books.Where(b => b.IsActive); 
-        return _mapper.Map<IEnumerable<BookDto>>(activeBooks); 
+        var books = await _bookRepository.GetAllWithAuthorsAsync();
+        return _mapper.Map<IEnumerable<BookDto>>(books); 
         
     }
 
     public async Task<BookDto> GetByIdAsync(int id)
     {
-        var book = await _bookRepository.GetByIdAsync(id);
+        var book = await _bookRepository.GetByIdWithAuthorAsync(id);
         if (book == null)
             throw new NotFoundException($"Book with ID {id} not found.");
 

@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Library.Core.Entities;
 using Library.Core.Interfaces;
 using Library.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,18 @@ public class Repository<T> : IRepository<T> where T : class
     {
         return await _dbSet.AnyAsync(predicate);
     }
-
     
+    public async Task<Book?> GetByIdWithAuthorAsync(int id)
+    {
+        return await _context.Books
+            .Include(b => b.Author)
+            .FirstOrDefaultAsync(b => b.Id == id);
+    }
+    public async Task<IEnumerable<Book>> GetAllWithAuthorsAsync()
+    {
+        return await _context.Books
+            .Include(b => b.Author)
+            .Where(b => b.IsActive)
+            .ToListAsync();
+    }
 }

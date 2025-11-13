@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Library.Core.Entities;
 
 namespace Library.Core.Interfaces;
 
@@ -11,5 +12,7 @@ public interface IRepository<T> where T : class
     void Delete(T entity);
     Task SaveChangesAsync();
     Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
- 
+    Task<Book?> GetByIdWithAuthorAsync(int id);
+    Task<IEnumerable<Book>> GetAllWithAuthorsAsync();
+    
 }
