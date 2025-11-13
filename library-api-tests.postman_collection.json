@@ -1,0 +1,398 @@
+{
+	"info": {
+		"_postman_id": "72a6ec02-4ef5-45ac-a313-b26dda431d85",
+		"name": "Library API Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43141861"
+	},
+	"item": [
+		{
+			"name": "Authors",
+			"item": [
+				{
+					"name": "Get Authors",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"pm.test(\"Authors list is not empty\", () => {\r",
+									"    pm.expect(res.success).to.be.true;\r",
+									"    pm.expect(res.data.length).to.be.greaterThan(0);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authors",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Authors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Author",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Author created successfully\", () => {\r",
+									"    pm.expect(res.success).to.be.true;\r",
+									"    pm.expect(res.data.name).to.eql(\"J.K. Rowling\");\r",
+									"});\r",
+									"\r",
+									"pm.environment.set(\"authorId\", res.data.id);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"J.K. Rowling\",\r\n  \"nationality\": \"British\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Authors",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Authors"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Books",
+			"item": [
+				{
+					"name": "Get all books",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Books list loaded\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"pm.expect(res.data).to.be.an(\"array\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a new book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Book created successfully\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"pm.expect(res.success).to.be.true;\r",
+									"pm.environment.set(\"bookId\", res.data.id);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Harry Potter 2\",\r\n  \"genre\": \"Fantasy\",\r\n  \"authorId\": {{authorId}},\r\n  \"availableCopies\": 5\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get book by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Book retrieved successfully\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"pm.expect(res.data.id).to.eql(Number(pm.environment.get(\"bookId\")));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Books",
+								"{{bookId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Book updated successfully\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"pm.expect(res.data.title).to.include(\"Updated\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Harry Potter - Updated\",\r\n  \"genre\": \"Fantasy\",\r\n  \"authorId\": {{authorId}},\r\n  \"availableCopies\": 3\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Books",
+								"{{bookId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Soft delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Book deleted (soft delete)\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"pm.expect(res.data).to.include(\"deleted\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Books",
+								"{{bookId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Borrow",
+			"item": [
+				{
+					"name": "Borrow book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Borrow success\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"pm.expect(res.success).to.be.true;\r",
+									"if (res.data && res.data.id) {\r",
+									"    pm.environment.set(\"borrowId\", res.data.id);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userName\": \"{{userName}}\",\r\n  \"bookId\": {{bookId}}\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Borrow/borrow",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Borrow",
+								"borrow"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Return book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Book returned successfully\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"pm.expect(res.message).to.include(\"returned\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Borrow/return/{{borrowId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Borrow",
+								"return",
+								"{{borrowId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
