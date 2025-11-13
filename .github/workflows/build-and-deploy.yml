@@ -1,0 +1,74 @@
+name: CI - Docker Build & Postman Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  IMAGE_NAME: library_webapi
+  REPORT_PATH: Reports/LibraryAPITestReport.html
+  API_URL: http://localhost:5000/api/Books
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # build Docker image
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest -f ./Library.WebApi/Dockerfile .
+
+      # run the container
+      - name: Run container
+        run: |
+          docker run -d -p 5000:8080 --name library-api \
+            -e ASPNETCORE_ENVIRONMENT=Production \
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          sleep 15
+
+      # innstall Newman CLI
+      - name: Install Newman and reporters
+        run: npm install -g newman newman-reporter-htmlextra
+
+      # run Postman API Tests
+      - name: Run API Tests via Newman
+        run: |
+          mkdir -p Reports
+          newman run library-api-tests.postman_collection.json \
+            -e library-api-env.postman_environment.json \
+            -r htmlextra \
+            --reporter-htmlextra-export $REPORT_PATH
+
+      # upload HTML report
+      - name: Upload API Test Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: LibraryAPI-Newman-Report
+          path: ${{ env.REPORT_PATH }}
+
+      # stop and remove container
+      - name: Stop and clean up containers
+        if: always()
+        run: docker stop library-api && docker rm library-api
+
+      # push Docker image (only if tests passed)
+      - name: Push Docker image
+        if: success()
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
