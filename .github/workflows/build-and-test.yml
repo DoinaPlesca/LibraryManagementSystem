@@ -67,7 +67,7 @@ jobs:
       # stop and remove container
       - name: Stop and clean up containers
         if: always()
-        run: docker stop library-api && docker rm library-api
+        run: docker stop library_webapi && docker rm library_webapi
 
       # push Docker image (only if tests passed)
       - name: Push Docker image
