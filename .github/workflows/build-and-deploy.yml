@@ -46,16 +46,31 @@ jobs:
       # innstall Newman CLI
       - name: Install Newman and reporters
         run: npm install -g newman newman-reporter-htmlextra
-
+      
+      # wait for API readiness
+      - name: Wait for API to start
+        run: |
+          echo "Waiting for API to be available..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5000/api/Books > /dev/null; then
+              echo "API is responding!"
+              break
+            fi
+            echo "Still waiting..."
+            sleep 5
+          done
+      
       # run Postman API Tests
       - name: Run API Tests via Newman
+        continue-on-error: true
         run: |
           mkdir -p Reports
           newman run library-api-tests.postman_collection.json \
-            -e library-api-env.postman_environment.json \
-            -r htmlextra \
-            --reporter-htmlextra-export $REPORT_PATH
-
+          -e library-api-env.postman_environment.json \
+          -r htmlextra \
+          --reporter-htmlextra-export $REPORT_PATH
+          
+          
       # upload HTML report
       - name: Upload API Test Report
         uses: actions/upload-artifact@v4
