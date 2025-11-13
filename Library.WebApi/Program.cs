@@ -45,10 +45,19 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SupportNonNullableReferenceTypes();
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
 
 var app = builder.Build();
 
@@ -66,6 +75,7 @@ using (var scope = app.Services.CreateScope())
     await initializer.InitializeAsync();
 }
 
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
 app.MapControllers();
