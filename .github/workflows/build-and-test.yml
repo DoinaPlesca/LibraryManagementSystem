@@ -30,35 +30,21 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # build Docker image
-      - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest -f ./Library.WebApi/Dockerfile .
-
-      # run the container
-      - name: Run container
+            
+      # build and start containers using docker-compose
+      - name: Build and start services
         run: |
-          docker run -d -p 5000:8080 --name library-api \
-            -e ASPNETCORE_ENVIRONMENT=Production \
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-          sleep 15
+          docker-compose -f docker-compose.yml up -d --build
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
       # innstall Newman CLI
       - name: Install Newman and reporters
         run: npm install -g newman newman-reporter-htmlextra
       
-      # wait for API readiness
-      - name: Wait for API to start
-        run: |
-          echo "Waiting for API to be available..."
-          for i in {1..30}; do
-            if curl -s http://localhost:5000/api/Books > /dev/null; then
-              echo "API is responding!"
-              break
-            fi
-            echo "Still waiting..."
-            sleep 5
-          done
+
       
       # run Postman API Tests
       - name: Run API Tests via Newman
