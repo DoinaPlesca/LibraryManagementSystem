@@ -31,10 +31,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
             
-      # build and start containers using docker-compose
+      # build and start services
       - name: Build and start services
         run: |
           docker compose -f docker-compose.yml up -d --build
+          echo "Waiting for API to be ready..."
+          sleep 20
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
@@ -69,7 +71,4 @@ jobs:
         if: always()
         run: docker stop library_webapi && docker rm library_webapi
 
-      # push Docker image (only if tests passed)
-      - name: Push Docker image
-        if: success()
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+  
