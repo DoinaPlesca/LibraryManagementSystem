@@ -10,11 +10,13 @@ public class BookService : IBookService
 {
     private readonly IRepository<Book> _bookRepository;
     private readonly IRepository<Author> _authorRepository;
+    private readonly IRepository<BorrowRecord> _borrowRepository;
     private readonly IMapper _mapper;
-    public BookService(IRepository<Book> bookRepository, IRepository<Author> authorRepository, IMapper mapper)
+    public BookService(IRepository<Book> bookRepository, IRepository<Author> authorRepository, IMapper mapper, IRepository<BorrowRecord> borrowRepository)
     {
         _bookRepository = bookRepository;
         _authorRepository = authorRepository;
+        _borrowRepository = borrowRepository;
         _mapper = mapper;
     }
 
@@ -74,6 +76,11 @@ public class BookService : IBookService
         var book = await _bookRepository.GetByIdAsync(id);
         if (book == null)
             throw new NotFoundException($"Book with ID {id} not found.");
+        
+        //  check if book has any active borrow records
+        var borrowed = await _borrowRepository.AnyAsync(b => b.BookId == id && b.ReturnDate == null);
+        if (borrowed)
+            throw new BadRequestException("Cannot delete a book that is currently borrowed.");
 
         book.IsActive = false; 
 

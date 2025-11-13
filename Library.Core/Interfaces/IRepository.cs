@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace Library.Core.Interfaces;
 
 public interface IRepository<T> where T : class
@@ -8,4 +10,6 @@ public interface IRepository<T> where T : class
     void Update(T entity);
     void Delete(T entity);
     Task SaveChangesAsync();
+    Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+ 
 }
