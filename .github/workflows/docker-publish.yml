@@ -1,16 +1,15 @@
 name: CD - Build & Push Library API Image
 
 on:
-  push:
-    branches: [ main ]
-  release:
-    types: [ published ]
-
-env:
-  IMAGE_NAME: librarymanagementsystem-webapi
+  workflow_run:
+    workflows: [ "CI - Docker Build & Postman Tests" ]
+    types:
+      - completed
+ 
 
 jobs:
   build-and-push:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -37,8 +36,8 @@ jobs:
           file: ./Library.WebApi/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:latest
+            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:${{ github.run_number }}
 
       # verify image built successfully
       - name: Show image list
