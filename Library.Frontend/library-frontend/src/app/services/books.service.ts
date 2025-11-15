@@ -4,14 +4,12 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
-// This matches the C# ApiResponse<T> wrapper
 export interface ApiResponse<T> {
   success: boolean;
   message: string | null;
   data: T;
 }
 
-// TODO: adjust these fields to match Library.Core.Dtos.Book.BookDto
 export interface Book {
   id: number;
   title: string;
@@ -20,6 +18,14 @@ export interface Book {
   authorName: string;
 }
 
+// Matches CreateBookDto in C#:
+// Title, Genre, AuthorId, AvailableCopies
+export interface CreateBookPayload {
+  title: string;
+  genre: string;
+  authorId: number;
+  availableCopies: number;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -35,11 +41,9 @@ export class BooksService {
       .pipe(map((res) => res.data));
   }
 
-  getBook(id: number): Observable<Book> {
+  createBook(payload: CreateBookPayload): Observable<Book> {
     return this.http
-      .get<ApiResponse<Book>>(`${this.baseUrl}/api/books/${id}`)
+      .post<ApiResponse<Book>>(`${this.baseUrl}/api/books`, payload)
       .pipe(map((res) => res.data));
   }
-
-  // later you can add create/update/delete using POST/PUT/DELETE
 }
