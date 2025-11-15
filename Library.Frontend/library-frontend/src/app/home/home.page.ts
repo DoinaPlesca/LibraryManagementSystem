@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 import { BooksService, Book } from '../services/books.service';
 
 @Component({
@@ -9,7 +10,8 @@ import { BooksService, Book } from '../services/books.service';
   standalone: true,
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  imports: [IonicModule, CommonModule, HttpClientModule],
+  imports: [IonicModule, CommonModule, HttpClientModule, RouterLink],
+
 })
 export class HomePage implements OnInit {
   books: Book[] = [];
