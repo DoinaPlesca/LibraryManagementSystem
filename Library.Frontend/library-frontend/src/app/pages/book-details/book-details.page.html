@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Book Details</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-spinner *ngIf="loading"></ion-spinner>
+
+  <ion-text color="danger" *ngIf="error">
+    <p>{{ error }}</p>
+  </ion-text>
+
+  <ion-card *ngIf="book && !loading">
+    <ion-card-header>
+      <ion-card-title>{{ book.title }}</ion-card-title>
+      <ion-card-subtitle>{{ book.authorName }}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <p><strong>Genre:</strong> {{ book.genre }}</p>
+      <p><strong>Available copies:</strong> {{ book.availableCopies }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Borrow section -->
+  <ion-list *ngIf="book && !loading">
+    <ion-item>
+      <ion-label position="stacked">User Name</ion-label>
+      <ion-input
+        [(ngModel)]="borrowUserName"
+        name="borrowUserName"
+        placeholder="Enter your name"
+      ></ion-input>
+    </ion-item>
+  </ion-list>
+
+  <ion-button
+    expand="block"
+    (click)="borrowBook()"
+    [disabled]="borrowing || !book || book.availableCopies <= 0"
+  >
+    {{ borrowing ? 'Processing...' : 'Borrow Book' }}
+  </ion-button>
+
+  <ion-button
+    color="medium"
+    expand="block"
+    (click)="returnBook()"
+    [disabled]="borrowing || !lastBorrow"
+  >
+    Return This Book
+  </ion-button>
+
+  <ion-button
+    color="danger"
+    expand="block"
+    (click)="deleteBook()"
+    [disabled]="deleting || loading || !book"
+  >
+    {{ deleting ? 'Deleting...' : 'Delete Book' }}
+  </ion-button>
+
+  <ion-button expand="block" routerLink="/home">
+    Back to list
+  </ion-button>
+</ion-content>

@@ -22,7 +22,7 @@
   </ion-text>
 
   <ion-list *ngIf="!loading && books.length">
-    <ion-item *ngFor="let book of books">
+    <ion-item *ngFor="let book of books" [routerLink]="['/books', book.id]">
       <ion-label>
         <h2>{{ book.title }}</h2>
         <p>Author: {{ book.authorName }}</p>

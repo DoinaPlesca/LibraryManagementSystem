@@ -46,4 +46,20 @@ export class BooksService {
       .post<ApiResponse<Book>>(`${this.baseUrl}/api/books`, payload)
       .pipe(map((res) => res.data));
   }
+
+  getBook(id: number): Observable<Book> {
+    return this.http
+      .get<ApiResponse<Book>>(`${this.baseUrl}/api/books/${id}`)
+      .pipe(map((res) => res.data));
+  }
+
+  deleteBook(id: number): Observable<boolean> {
+    // API returns ApiResponse<string>, but we only care if it succeeded
+    return this.http
+      .delete<ApiResponse<string>>(`${this.baseUrl}/api/books/${id}`)
+      .pipe(map((res) => res.success));
+  }
+
+
+
 }

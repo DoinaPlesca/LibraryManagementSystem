@@ -12,9 +12,23 @@ export const routes: Routes = [
         (m) => m.BookCreatePage
       ),
   },
+
+  {
+    path: 'books/:id',
+    loadComponent: () =>
+      import('./pages/book-details/book-details.page').then(
+        (m) => m.BookDetailsPage
+      ),
+  },
+
   {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full',
   },
+  {
+    path: 'book-details',
+    loadComponent: () => import('./pages/book-details/book-details.page').then( m => m.BookDetailsPage)
+  },
+
 ];
