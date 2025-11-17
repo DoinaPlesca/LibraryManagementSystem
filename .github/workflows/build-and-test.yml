@@ -66,13 +66,19 @@ jobs:
             || echo "NEWMAN ERROR: $?"
           echo "Newman finished with exit code $?"
 
+      - name: Debug Reports folder
+        run: |
+          echo "Listing Reports folder:"
+          ls -l Reports
     
-    # upload HTML report
+      # upload HTML report
       - name: Upload API Test Report
         uses: actions/upload-artifact@v4
         with:
           name: LibraryAPI-Newman-Report
-          path: ${{ env.REPORT_PATH }}
+          path: Reports/
+          
+
 
       # stop and remove container
       - name: Stop and clean up containers
