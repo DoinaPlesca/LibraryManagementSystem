@@ -60,6 +60,17 @@
     {{ deleting ? 'Deleting...' : 'Delete Book' }}
   </ion-button>
 
+  <ion-button
+    expand="block"
+    color="primary"
+    [routerLink]="['/books', book?.id, 'edit']"
+    *ngIf="book"
+  >
+    Edit Book
+  </ion-button>
+
+
+
   <ion-button expand="block" routerLink="/home">
     Back to list
   </ion-button>

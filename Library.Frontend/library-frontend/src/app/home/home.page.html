@@ -20,6 +20,11 @@
   <ion-text color="danger" *ngIf="error">
     <p>{{ error }}</p>
   </ion-text>
+  <ion-button routerLink="/borrows" color="medium">
+    View My Borrows
+  </ion-button>
+
+
 
   <ion-list *ngIf="!loading && books.length">
     <ion-item *ngFor="let book of books" [routerLink]="['/books', book.id]">

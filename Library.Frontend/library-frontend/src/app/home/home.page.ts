@@ -23,6 +23,9 @@ export class HomePage implements OnInit {
   ngOnInit(): void {
     this.loadBooks();
   }
+  ionViewWillEnter(): void {
+    this.loadBooks();
+  }
 
   loadBooks(): void {
     this.loading = true;

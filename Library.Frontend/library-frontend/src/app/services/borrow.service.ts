@@ -48,4 +48,13 @@ export class BorrowService {
       )
       .pipe(map((res) => res.data));
   }
+
+  getBorrowsByUser(userName: string): Observable<BorrowRecord[]> {
+    return this.http
+      .get<ApiResponse<BorrowRecord[]>>(
+        `${this.baseUrl}/api/borrow/user/${encodeURIComponent(userName)}`
+      )
+      .pipe(map((res) => res.data));
+  }
+
 }
