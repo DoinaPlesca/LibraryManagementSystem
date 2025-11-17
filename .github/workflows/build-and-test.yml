@@ -48,7 +48,9 @@ jobs:
       - name: Install Newman and reporters
         run: npm install -g newman newman-reporter-htmlextra
       
-
+      # delete old reports
+      - name: Cleanup old reports
+        run: rm -rf Reports && mkdir Reports
       
       # run Postman API Tests
       - name: Run API Tests via Newman
@@ -64,11 +66,9 @@ jobs:
             --verbose \
             || echo "NEWMAN ERROR: $?"
           echo "Newman finished with exit code $?"
-      
-      
-      
-      
-      # upload HTML report
+
+    
+    # upload HTML report
       - name: Upload API Test Report
         uses: actions/upload-artifact@v4
         with:
