@@ -9,10 +9,13 @@ public class CreateAuthorDtoValidator : AbstractValidator<CreateAuthorDto>
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Author name is required.")
-            .MaximumLength(100);
+            .MinimumLength(3).WithMessage("Author name must be at least 3 characters long.")
+            .MaximumLength(50).WithMessage("Author name cannot exceed 100 characters.")
+            .Matches(@"^[A-Za-z\s\-']+$").WithMessage("Author name can only contain letters, spaces, and apostrophes.");
 
         RuleFor(x => x.Nationality)
             .NotEmpty().WithMessage("Nationality is required.")
-            .MaximumLength(50);
+            .MaximumLength(50).WithMessage("Nationality cannot exceed 50 characters.")
+            .Matches(@"^[A-Za-z\s]+$").WithMessage("Nationality must only contain letters and spaces.");
     }
 }
