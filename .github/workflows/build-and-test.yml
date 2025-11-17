@@ -9,7 +9,8 @@ on:
 env:
   IMAGE_NAME: library_webapi
   REPORT_PATH: Reports/LibraryAPITestReport.html
-  API_URL: http://localhost:5000/api/Books
+  API_URL: http://localhost:5000/health
+
 
 jobs:
   build-test-push:
