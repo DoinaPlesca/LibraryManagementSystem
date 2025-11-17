@@ -75,7 +75,7 @@ using (var scope = app.Services.CreateScope())
     await initializer.InitializeAsync();
 }
 
-app.MapGet("/health", () => "Healthy");
+
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 

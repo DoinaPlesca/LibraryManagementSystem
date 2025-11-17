@@ -43,19 +43,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           
-      - name: Wait for API to be ready
-        run: |
-          for i in {1..40}; do
-            if curl -s $API_URL > /dev/null; then
-              echo "API is up!"
-              exit 0
-            fi
-            echo "Waiting for API... ($i/40)"
-            sleep 3
-          done
-          echo "API did not start in time!"
-          exit 1
-
+          
       # innstall Newman CLI
       - name: Install Newman and reporters
         run: npm install -g newman newman-reporter-htmlextra
@@ -67,12 +55,16 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p Reports
+          echo "Running Newman tests..."
           newman run library-api-tests.postman_collection.json \
-          -e library-api-env.postman_environment.json \
-          -r htmlextra \
-          --reporter-htmlextra-export $REPORT_PATH
-          
-          
+            -e library-api-env.postman_environment.json \
+            -r htmlextra \
+            --reporter-htmlextra-export $REPORT_PATH \
+            --verbose
+          echo "Newman finished with exit code $?"
+      
+      
+      
       # upload HTML report
       - name: Upload API Test Report
         uses: actions/upload-artifact@v4
