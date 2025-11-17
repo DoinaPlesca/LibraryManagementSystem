@@ -56,12 +56,15 @@ jobs:
         run: |
           mkdir -p Reports
           echo "Running Newman tests..."
+          set -x   # debug: show every command that runs
           newman run library-api-tests.postman_collection.json \
             -e library-api-env.postman_environment.json \
             -r htmlextra \
             --reporter-htmlextra-export $REPORT_PATH \
-            --verbose
+            --verbose \
+            || echo "NEWMAN ERROR: $?"
           echo "Newman finished with exit code $?"
+      
       
       
       
