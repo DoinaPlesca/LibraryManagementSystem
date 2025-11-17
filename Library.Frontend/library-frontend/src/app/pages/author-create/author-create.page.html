@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Create Author</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="stacked">Name</ion-label>
+    <ion-input
+      [(ngModel)]="newAuthor.name"
+      name="name"
+      placeholder="e.g. J.K. Rowling"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Nationality</ion-label>
+    <ion-input
+      [(ngModel)]="newAuthor.nationality"
+      name="nationality"
+      placeholder="e.g. British"
+    ></ion-input>
+  </ion-item>
+
+  <ion-text color="danger" *ngIf="error">
+    <p>{{ error }}</p>
+  </ion-text>
+
+  <ion-button
+    expand="block"
+    (click)="saveAuthor()"
+    [disabled]="submitting"
+  >
+    {{ submitting ? 'Saving...' : 'Save Author' }}
+  </ion-button>
+
+  <ion-button expand="block" routerLink="/home" color="medium">
+    Cancel
+  </ion-button>
+</ion-content>

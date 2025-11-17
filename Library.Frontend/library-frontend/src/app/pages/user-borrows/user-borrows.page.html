@@ -1,0 +1,59 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>My Borrowed Books</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="stacked">User Name</ion-label>
+    <ion-input
+      [(ngModel)]="userName"
+      name="userName"
+      placeholder="Enter your username"
+    ></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" (click)="loadBorrows()">
+    Load My Borrows
+  </ion-button>
+
+  <ion-spinner *ngIf="loading"></ion-spinner>
+
+  <ion-text color="danger" *ngIf="error">
+    <p>{{ error }}</p>
+  </ion-text>
+
+  <ion-list *ngIf="!loading && borrows.length">
+    <ion-item *ngFor="let br of borrows">
+      <ion-label>
+        <h2>{{ br.bookTitle }}</h2>
+        <p>
+          Borrowed on:
+          {{ br.borrowDate | date: 'short' }}
+        </p>
+        <p *ngIf="br.returnDate">
+          Returned on:
+          {{ br.returnDate | date: 'short' }}
+        </p>
+        <p *ngIf="!br.returnDate">
+          Not returned yet
+        </p>
+      </ion-label>
+
+      <ion-button
+        slot="end"
+        color="medium"
+        size="small"
+        (click)="returnBorrow(br)"
+        [disabled]="!!br.returnDate || returningId === br.id"
+      >
+        {{ returningId === br.id ? 'Returning...' : 'Return' }}
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <p *ngIf="!loading && !borrows.length && !error">
+    No borrow records for this user.
+  </p>
+</ion-content>

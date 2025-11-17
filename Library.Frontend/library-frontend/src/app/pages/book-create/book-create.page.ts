@@ -9,13 +9,14 @@ import {
 } from '../../services/books.service';
 import { AuthorsService, Author } from '../../services/authors.service';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-book-create',
   standalone: true,
   templateUrl: './book-create.page.html',
   styleUrls: ['./book-create.page.scss'],
-  imports: [IonicModule, CommonModule, FormsModule, HttpClientModule],
+  imports: [IonicModule, CommonModule, FormsModule, HttpClientModule, RouterLink],
 })
 export class BookCreatePage implements OnInit {
   authors: Author[] = [];
@@ -55,6 +56,11 @@ export class BookCreatePage implements OnInit {
       },
     });
   }
+
+  ionViewWillEnter(): void {
+    this.loadAuthors();
+  }
+
 
   saveBook(): void {
     if (!this.newBook.title.trim() || !this.newBook.genre.trim()) {

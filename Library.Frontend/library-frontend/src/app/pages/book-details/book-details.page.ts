@@ -47,6 +47,9 @@ export class BookDetailsPage implements OnInit {
     this.loadBook(id);
   }
 
+
+
+
   loadBook(id: number): void {
     this.loading = true;
     this.error = null;

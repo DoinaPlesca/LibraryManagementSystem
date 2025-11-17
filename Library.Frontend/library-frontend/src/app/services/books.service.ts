@@ -16,7 +16,18 @@ export interface Book {
   genre: string;
   availableCopies: number;
   authorName: string;
+  authorId: number;
 }
+
+
+
+export interface UpdateBookPayload {
+  title: string;
+  genre: string;
+  authorId: number;
+  availableCopies: number;
+}
+
 
 // Matches CreateBookDto in C#:
 // Title, Genre, AuthorId, AvailableCopies
@@ -59,6 +70,16 @@ export class BooksService {
       .delete<ApiResponse<string>>(`${this.baseUrl}/api/books/${id}`)
       .pipe(map((res) => res.success));
   }
+
+  updateBook(id: number, payload: UpdateBookPayload): Observable<Book> {
+    return this.http
+      .put<ApiResponse<Book>>(
+        `${this.baseUrl}/api/books/${id}`,
+        payload
+      )
+      .pipe(map((res) => res.data));
+  }
+
 
 
 
