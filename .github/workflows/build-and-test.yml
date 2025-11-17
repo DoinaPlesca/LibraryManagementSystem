@@ -56,7 +56,6 @@ jobs:
       - name: Run API Tests via Newman
         continue-on-error: true
         run: |
-          mkdir -p Reports
           echo "Running Newman tests..."
           set -x   # debug: show every command that runs
           newman run library-api-tests.postman_collection.json \
