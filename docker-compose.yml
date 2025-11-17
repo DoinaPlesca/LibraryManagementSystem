@@ -16,7 +16,7 @@ services:
     networks:
       - library_network
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /var/lib/postgresql/data
 
   webapi:
     build:
