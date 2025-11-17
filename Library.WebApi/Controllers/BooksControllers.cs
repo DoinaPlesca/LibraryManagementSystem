@@ -45,8 +45,7 @@ public class BooksController : ControllerBase
         var updated = await _bookService.UpdateAsync(id, dto);
         return Ok(ApiResponse<BookDto>.Ok(updated, "Book updated successfully"));
     }
-
-   
+    
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
