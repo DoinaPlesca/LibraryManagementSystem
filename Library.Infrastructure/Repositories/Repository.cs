@@ -42,4 +42,13 @@ public class Repository<T> : IRepository<T> where T : class
             .Where(b => b.IsActive)
             .ToListAsync();
     }
+    
+    public async Task<IEnumerable<BorrowRecord>> GetAllWithBooksAsync()
+    {
+        return await _context.BorrowRecords
+            .Include(b => b.Book)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
 }

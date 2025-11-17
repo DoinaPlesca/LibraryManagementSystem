@@ -29,4 +29,12 @@ public class BorrowController : ControllerBase
         var record = await _borrowService.ReturnBookAsync(borrowId);
         return Ok(ApiResponse<BorrowRecordDto>.Ok(record, "Book returned successfully"));
     }
+    
+    [HttpGet("user/{userName}")]
+    public async Task<IActionResult> GetUserBorrows(string userName)
+    {
+        var records = await _borrowService.GetBorrowsByUserAsync(userName);
+        return Ok(ApiResponse<IEnumerable<BorrowRecordDto>>.Ok(records));
+    }
+
 }

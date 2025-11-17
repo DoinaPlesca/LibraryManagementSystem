@@ -6,4 +6,5 @@ public interface IBorrowService
 {
     Task<BorrowRecordDto> BorrowBookAsync(string userName, int bookId);
     Task<BorrowRecordDto> ReturnBookAsync(int borrowId);
+    Task<IEnumerable<BorrowRecordDto>> GetBorrowsByUserAsync(string userName);
 }

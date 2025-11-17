@@ -83,4 +83,22 @@ public class BorrowService : IBorrowService
         borrowRecord.Book = book;
         return _mapper.Map<BorrowRecordDto>(borrowRecord);
     }
+    
+    public async Task<IEnumerable<BorrowRecordDto>> GetBorrowsByUserAsync(string userName)
+    {
+        if (string.IsNullOrWhiteSpace(userName))
+            throw new BadRequestException("Username must be provided.");
+
+        var allBorrows = await _borrowRepository.GetAllWithBooksAsync();
+        var userBorrows = allBorrows
+            .Where(b => b.UserName.ToLower() == userName.ToLower())
+            .OrderByDescending(b => b.BorrowDate)
+            .ToList();
+
+        if (!userBorrows.Any())
+            throw new NotFoundException($"No borrow records found for user '{userName}'.");
+
+        return _mapper.Map<IEnumerable<BorrowRecordDto>>(userBorrows);
+    }
+    
 }
