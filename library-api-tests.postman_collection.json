@@ -620,7 +620,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userName\": \"TestUser\",\r\n  \"bookId\": 5\r\n}\r\n\r\n",
+							"raw": "{\r\n  \"userName\": \"TestUser\",\r\n  \"bookId\": 4\r\n}\r\n\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -628,12 +628,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/Borrow/borrow",
+							"raw": "{{baseUrl}}/borrow/borrow",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"Borrow",
+								"borrow",
 								"borrow"
 							]
 						}
@@ -708,12 +708,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/Borrow/return/{{borrowId}}",
+							"raw": "{{baseUrl}}/borrow/return/{{borrowId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"Borrow",
+								"borrow",
 								"return",
 								"{{borrowId}}"
 							]
@@ -780,18 +780,29 @@
 								"packages": {},
 								"requests": {}
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
 						}
 					],
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/Borrow/user/{{userName}}",
+							"raw": "{{baseUrl}}/borrow/user/{{userName}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"Borrow",
+								"borrow",
 								"user",
 								"{{userName}}"
 							]
