@@ -503,6 +503,76 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Soft delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const res = pm.response.json();\r",
+									"const deletedBookId = Number(pm.environment.get(\"bookId\"));\r",
+									"\r",
+									"// Validate API structure\r",
+									"pm.test(\"Response has valid API structure\", () => {\r",
+									"    pm.expect(res).to.have.property(\"success\");\r",
+									"    pm.expect(res).to.have.property(\"data\");\r",
+									"    pm.expect(res).to.have.property(\"message\");\r",
+									"    pm.expect(res).to.have.property(\"status\");\r",
+									"});\r",
+									"\r",
+									"// Validate API success flag\r",
+									"pm.test(\"API success flag is correct\", () => {\r",
+									"    pm.expect(res.success).to.be.true;\r",
+									"    pm.expect(res.status).to.equal(200);\r",
+									"});\r",
+									"\r",
+									"// Validate returned message (soft delete confirmation)\r",
+									"pm.test(\"Delete operation returned confirmation message\", () => {\r",
+									"    pm.expect(res.data.toLowerCase()).to.include(\"deleted\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									"// Optional: Verify returned data references the correct book\r",
+									"pm.test(\"Deleted book ID is correct (if returned)\", () => {\r",
+									"    if (typeof res.data === \"object\" && res.data !== null) {\r",
+									"        pm.expect(res.data).to.have.property(\"id\");\r",
+									"        pm.expect(res.data.id).to.equal(deletedBookId);\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									"// Cleanup test: Ensure old ID is removed from environment\r",
+									"pm.test(\"Clear deleted book ID from environment\", () => {\r",
+									"    pm.environment.unset(\"bookId\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Books/{{bookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"Books",
+								"{{bookId}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -516,27 +586,37 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", () => {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
 									"const res = pm.response.json();\r",
 									"\r",
+									"// Always validate status code first\r",
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.equal(200);\r",
+									"});\r",
+									"\r",
+									"// Stop immediately if request failed\r",
+									"if (pm.response.code !== 200) {\r",
+									"    pm.test(\"Borrow failed – response logged\", () => {\r",
+									"        pm.expect.fail(`Borrow failed with status ${pm.response.code}: ${res.message}`);\r",
+									"    });\r",
+									"    return;\r",
+									"}\r",
+									"\r",
+									"// Success assertions (only run when 200)\r",
 									"pm.test(\"Borrow operation succeeded\", () => {\r",
 									"    pm.expect(res.success).to.be.true;\r",
 									"    pm.expect(res.status).to.equal(200);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Borrow record structure is correct\", () => {\r",
+									"    pm.expect(res.data).to.be.an(\"object\");\r",
 									"    pm.expect(res.data).to.have.property(\"id\");\r",
 									"    pm.expect(res.data).to.have.property(\"userName\");\r",
 									"    pm.expect(res.data).to.have.property(\"bookId\");\r",
 									"    pm.expect(res.data).to.have.property(\"borrowDate\");\r",
 									"});\r",
 									"\r",
+									"// Save borrowId safely\r",
 									"pm.environment.set(\"borrowId\", res.data.id);\r",
-									"\r",
-									"\r",
 									""
 								],
 								"type": "text/javascript",
@@ -741,76 +821,6 @@
 					"response": []
 				}
 			]
-		},
-		{
-			"name": "Soft delete",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", () => {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"const res = pm.response.json();\r",
-							"const deletedBookId = Number(pm.environment.get(\"bookId\"));\r",
-							"\r",
-							"// Validate API structure\r",
-							"pm.test(\"Response has valid API structure\", () => {\r",
-							"    pm.expect(res).to.have.property(\"success\");\r",
-							"    pm.expect(res).to.have.property(\"data\");\r",
-							"    pm.expect(res).to.have.property(\"message\");\r",
-							"    pm.expect(res).to.have.property(\"status\");\r",
-							"});\r",
-							"\r",
-							"// Validate API success flag\r",
-							"pm.test(\"API success flag is correct\", () => {\r",
-							"    pm.expect(res.success).to.be.true;\r",
-							"    pm.expect(res.status).to.equal(200);\r",
-							"});\r",
-							"\r",
-							"// Validate returned message (soft delete confirmation)\r",
-							"pm.test(\"Delete operation returned confirmation message\", () => {\r",
-							"    pm.expect(res.data.toLowerCase()).to.include(\"deleted\");\r",
-							"});\r",
-							"\r",
-							"\r",
-							"// Optional: Verify returned data references the correct book\r",
-							"pm.test(\"Deleted book ID is correct (if returned)\", () => {\r",
-							"    if (typeof res.data === \"object\" && res.data !== null) {\r",
-							"        pm.expect(res.data).to.have.property(\"id\");\r",
-							"        pm.expect(res.data.id).to.equal(deletedBookId);\r",
-							"    }\r",
-							"});\r",
-							"\r",
-							"// Cleanup test: Ensure old ID is removed from environment\r",
-							"pm.test(\"Clear deleted book ID from environment\", () => {\r",
-							"    pm.environment.unset(\"bookId\");\r",
-							"});\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/Books/{{bookId}}",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"Books",
-						"{{bookId}}"
-					]
-				}
-			},
-			"response": []
 		}
 	]
 }
