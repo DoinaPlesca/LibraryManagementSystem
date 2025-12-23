@@ -1,45 +1,87 @@
-version: "3.9"
+name: CI - Docker Build & Postman Tests
 
-services:
-  postgres:
-    image: postgres:14
-    container_name: library_postgres
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-#    env_file:
-#      - .env
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    networks:
-      - library_network
-    volumes:
-      - /var/lib/postgresql/data
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-  webapi:
-    build:
-      context: .
-      dockerfile: Library.WebApi/Dockerfile
-    container_name: library_webapi
-    restart: unless-stopped
-    depends_on:
-      - postgres
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - DB_CONNECTION_STRING=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-    ports:
-      - "5000:8080"
-    networks:
-      - library_network
+env:
+  IMAGE_NAME: library_webapi
+  REPORT_PATH: Reports/LibraryAPITestReport.html
+  API_URL: http://localhost:5000/health
 
-volumes:
-  postgres_data:
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      # build and start services
+      - name: Build and start services
+        run: |
+          docker compose -f docker-compose.yml up -d --build
+          echo "Waiting for API to be ready..."
+          sleep 20
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      
+      
+      # innstall Newman CLI
+      - name: Install Newman and reporters
+        run: npm install -g newman newman-reporter-htmlextra
+      
+      # delete old reports
+      - name: Cleanup old reports
+        run: rm -rf Reports && mkdir Reports
+      
+      # run Postman API Tests
+      - name: Run API Tests via Newman
+        run: |
+          echo "Running Newman tests..."
+          set -x   # debug: show every command that runs
+          newman run library-api-tests.postman_collection.json \
+            -e library-api-env.postman_environment.json \
+            -r htmlextra \
+            --reporter-htmlextra-export $REPORT_PATH \
+            --verbose \
+            || echo "NEWMAN ERROR: $?"
+          echo "Newman finished with exit code $?"
+
+      - name: Debug Reports folder
+        run: |
+          echo "Listing Reports folder:"
+          ls -l Reports
+      
+      # upload HTML report
+      - name: Upload API Test Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: LibraryAPI-Newman-Report
+          path: Reports/
+      
+      
+      
+      # stop and remove container
+      - name: Stop and clean up containers
+        if: always()
+        run: docker stop library_webapi && docker rm library_webapi
+
   
-  
-
-networks:
-  library_network:
-    driver: bridge
-
