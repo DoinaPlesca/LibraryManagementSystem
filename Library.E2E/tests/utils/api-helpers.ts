@@ -1,7 +1,7 @@
 import { APIRequestContext } from "@playwright/test";
 
 export class ApiHelper {
-  constructor(private request: APIRequestContext) {}
+  constructor(private request: APIRequestContext) { }
 
   // AUTHORS
   async createAuthor(data: { name: string; nationality: string }) {
@@ -11,6 +11,11 @@ export class ApiHelper {
 
   async getAuthors() {
     const res = await this.request.get("/api/authors");
+    return res.json();
+  }
+
+  async deleteAuthor(id: number) {
+    const res = await this.request.delete(`/api/authors/${id}`);
     return res.json();
   }
 
