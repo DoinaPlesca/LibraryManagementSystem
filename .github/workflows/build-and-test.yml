@@ -30,15 +30,15 @@ jobs:
    
       
       # SECURITY ------ dependency vulnerability scan
-      - name: Install Trivy
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget
-          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.48.1_Linux-64bit.deb
-          sudo dpkg -i trivy_0.48.1_Linux-64bit.deb
+      - name: Trivy filesystem scan dependencies & configs
+        uses: aquasecurity/trivy-action@v0.30.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: 0
 
-      - name: Run Trivy FS Scan
-        run: trivy fs --exit-code 0 --severity HIGH,CRITICAL .
+      
 
       
       # SECURITY ------ Docker build
@@ -51,20 +51,30 @@ jobs:
 
      # SECURITY ----- SBOM from docker image 
       - name: Generate SBOM (CycloneDX)
-        run: trivy image --format cyclonedx --output $SBOM_FILE $IMAGE_NAME
+        uses: aquasecurity/trivy-action@v0.30.0
+        with:
+          scan-type: image
+          image-ref: ${{ env.IMAGE_NAME }}
+          format: cyclonedx
+          output: ${{ env.SBOM_FILE }}
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
           name: SBOM
-          path: $SBOM_FILE
+          path: ${{ env.SBOM_FILE }}
           
           
       # SECURITY ------ Docker image scan
       - name: Scan Docker image
-        run: trivy image --severity HIGH,CRITICAL --exit-code 1 $IMAGE_NAME
-      
-      
+        uses: aquasecurity/trivy-action@v0.30.0
+        with:
+          scan-type: image
+          image-ref: ${{ env.IMAGE_NAME }}
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          
+          
       # build and start containers for testing
       - name: Start Services
         run: |
