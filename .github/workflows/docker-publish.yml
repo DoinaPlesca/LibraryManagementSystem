@@ -30,13 +30,13 @@ jobs:
 
       # build and push image
       - name: Build and push Library WebAPI image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Library.WebApi/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:latest
 
     # SECURITY ----- Install Cosign
       - name: Install Cosign
@@ -54,18 +54,13 @@ jobs:
           printf "%s" "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
           cosign sign --yes --key cosign.key \
             --key cosign.key \
-            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:latest
+            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
       
       
     # SECURITY ----- Verify signature
       - name: Verify Docker Image Signature
         run: |
-          echo "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
-          cosign verify \
-            --key cosign.pub \
-            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:latest
+          printf "%s" "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
+          cosign verify --key cosign.pub \
+            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
       
-    # SECURITY ----- Push image after verification
-      - name: Push Signed Image
-        run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:latest
