@@ -67,7 +67,6 @@ jobs:
               -u ${{ secrets.DOCKER_USERNAME }} \
               --password-stdin
           
-      # SECURITY -----  Sing image
       - name: Sign Docker image
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
@@ -75,10 +74,10 @@ jobs:
         run: |
           set -x
           printf "%s" "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-          cosign sign --yes 
-          --key cosign.key \
-          ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
-
+          
+          cosign sign --yes --key cosign.key \
+            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
+      
       - name: Wait for Docker Hub consistency
         run: sleep 10
         
