@@ -10,55 +10,38 @@ on:
 permissions:
   contents: read
 
-
+env:
+  IMAGE_REF: ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi
+  
 jobs:
   build-and-push:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      # checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # set up Docker Buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # log in
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+      - name: Download image digest artifact
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          name: image-digest
+          path: .
 
-      # build and push image
-      - name: Build and push Library WebAPI image
-        id: build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Library.WebApi/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:latest
-
-      - name: Debug image digest
+      - name: Read image digest
+        id: digest
         run: |
-          echo "----------------------------------------"
-          echo "Docker image digest:"
-          echo "${{ steps.build.outputs.digest }}"
-          echo "----------------------------------------"
-      
-      
+          DIGEST=$(cat image-digest.txt)
+          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
+          echo "Image digest from CI: $DIGEST"
+
+     
+     
       
       # SECURITY ----- Install Cosign
       - name: Install Cosign
         run: |
-          curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 \
-            -o cosign
-          chmod +x cosign
-          sudo mv cosign /usr/local/bin/cosign
-          cosign version
+            curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o cosign
+            chmod +x cosign
+            sudo mv cosign /usr/local/bin/cosign
+            cosign version
 
       - name: Login to Docker Hub for Cosign
         run: |
@@ -81,23 +64,21 @@ jobs:
       - name: Wait for Docker Hub consistency
         run: sleep 10
         
-      - name: Debug Cosign signature location
+      - name: Confirm signature presence
         env:
           COSIGN_LOG_LEVEL: debug
         run: |
-          cosign triangulate \
-            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
-      
+            cosign triangulate \
+              index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}
       
       # SECURITY ----- Verify signature
       - name: Verify Docker image signature
         env:
           COSIGN_LOG_LEVEL: debug
         run: |
-          set -x
-          printf "%s" "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
-
-          cosign verify \
-            --key cosign.pub \
-            index.docker.io/${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
-      
+            set -x
+            printf "%s" "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
+            
+            cosign verify \
+              --key cosign.pub \
+              index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}

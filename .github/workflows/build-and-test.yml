@@ -11,7 +11,8 @@ permissions:
   id-token: write
 
 env:
-  IMAGE_NAME: library_webapi
+  IMAGE_NAME: librarymanagementsystem-webapi
+  IMAGE_REF: ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi
   REPORT_PATH: Reports/LibraryAPITestReport.html
   SBOM_FILE: sbom.json
 
@@ -47,11 +48,42 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
-        run: docker build -t $IMAGE_NAME -f Library.WebApi/Dockerfile .
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+            
+      - name: Build & Push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+            context: .
+            file: Library.WebApi/Dockerfile
+            push: true
+            tags: |
+              ${{ env.IMAGE_REF }}:latest
+              
+      - name: Debug image digest
+        run: |
+         echo "----------------------------------------"
+         echo "Image pushed with digest:"
+         echo "${{ steps.build.outputs.digest }}"
+         echo "----------------------------------------"
+      
 
+      - name: Save image digest
+        run: |
+         echo "${{ steps.build.outputs.digest }}" > image-digest.txt
 
-     # SECURITY ----- SBOM from docker image 
+      - name: Upload image digest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-digest
+          path: image-digest.txt
+      
+      
+      # SECURITY ----- SBOM from docker image 
       - name: Generate SBOM (CycloneDX)
         uses: aquasecurity/trivy-action@master
         with:
@@ -92,7 +124,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          docker compose -f docker-compose.yml up -d --build
+          docker compose up -d
           sleep 15
        
       
