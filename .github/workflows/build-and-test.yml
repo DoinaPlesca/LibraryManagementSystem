@@ -22,23 +22,20 @@ jobs:
         uses: actions/checkout@v4
         
       # SECURITY ------ SBOM generation
-      - name: Install CycloneDX .NET Tool
-        run: dotnet tool install --global CycloneDX
+      - name: Install CycloneDX.MSBuild
+        run: dotnet add Library.WebApi/Library.WebApi.csproj package CycloneDX.MSBuild
 
-      - name: Add .NET tools to PATH
-        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+      - name: Restore dependencies
+        run: dotnet restore
 
-      - name: Check installed tools
-        run: ls -l $HOME/.dotnet/tools
-        
-      - name: Generate SBOM
-        run: dotnet-cyclonedx -o sbom.json -f json
+      - name: Build project & Generate SBOM
+        run: dotnet build Library.WebApi/Library.WebApi.csproj -t:CreateBom -p:BomFormat=json
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
           name: SBOM
-          path: sbom.json
+          path: Library.WebApi/bom.json
       
       # SECURITY ------ dependency vulnerability scan
       - name: Install Trivy
