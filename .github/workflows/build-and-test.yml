@@ -22,17 +22,22 @@ jobs:
         uses: actions/checkout@v4
         
       # SECURITY ------ SBOM generation
-      - name: Install CycloneDX CLI
-        run: |
-          curl -Lo cyclonedx https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64
-          chmod +x cyclonedx
-          sudo mv cyclonedx /usr/local/bin/
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install CycloneDX (.NET Tool)
+        run: dotnet tool install -g CycloneDX
+
+      - name: Add .NET tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Verify CycloneDX
         run: cyclonedx --version
-        
-      - name: Generate SBOM
-        run: trivy fs . --format cyclonedx --output $SBOM_FILE
+
+      - name: Generate SBOM (CycloneDX)
+        run: cyclonedx Library.WebApi -o $SBOM_FILE --json
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
@@ -42,8 +47,10 @@ jobs:
       
       # SECURITY ------ dependency vulnerability scan
       - name: Install Trivy
-        run: sudo apt-get install -y wget && \
-          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.48.1_Linux-64bit.deb && \
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.48.1_Linux-64bit.deb
           sudo dpkg -i trivy_0.48.1_Linux-64bit.deb
 
       - name: Run Trivy FS Scan
