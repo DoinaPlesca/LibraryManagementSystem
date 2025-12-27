@@ -18,10 +18,6 @@ jobs:
 
     steps:
       # checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      # SECURITY ------ SBOM generation
       - name: Install CycloneDX.MSBuild
         run: dotnet add Library.WebApi/Library.WebApi.csproj package CycloneDX.MSBuild
 
@@ -29,13 +25,13 @@ jobs:
         run: dotnet restore
 
       - name: Build project & Generate SBOM
-        run: dotnet build Library.WebApi/Library.WebApi.csproj -t:CreateBom -p:BomFormat=json
+        run: dotnet build Library.WebApi/Library.WebApi.csproj -t:CycloneDX -p:CycloneDXFormat=json
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
           name: SBOM
-          path: Library.WebApi/bom.json
+          path: Library.WebApi/bin/**/bom.json
       
       # SECURITY ------ dependency vulnerability scan
       - name: Install Trivy
