@@ -49,10 +49,16 @@ jobs:
             -o cosign
           chmod +x cosign
           sudo mv cosign /usr/local/bin/cosign
-      
-      
+
+      - name: Login to Docker Hub for Cosign
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | \
+            cosign login docker.io \
+              -u ${{ secrets.DOCKER_USERNAME }} \
+              --password-stdin
+          
       # SECURITY -----  Sing image
-      - name: Sign Docker image (Cosign key-based)
+      - name: Sign Docker image
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         run: |
