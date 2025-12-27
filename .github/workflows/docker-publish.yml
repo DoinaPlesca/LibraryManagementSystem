@@ -51,8 +51,8 @@ jobs:
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         run: |
-          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-          cosign sign \
+          printf "%s" "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+          cosign sign --yes --key cosign.key \
             --key cosign.key \
             ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:latest
       
