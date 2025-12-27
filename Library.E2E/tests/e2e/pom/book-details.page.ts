@@ -1,59 +1,66 @@
 import { Page, Locator } from '@playwright/test';
 
 export class BookDetailsPage {
-  private page: Page;
+  private readonly page: Page;
 
-  title: Locator;
-  author: Locator;
-  genre: Locator;
-  copies: Locator;
+  readonly title: Locator;
+  readonly author: Locator;
+  readonly genre: Locator;
+  readonly copies: Locator;
 
-  userInput: Locator;
-  borrowButton: Locator;
-  returnButton: Locator;
-  deleteButton: Locator;
-  editButton: Locator;
-  backButton: Locator;
+  readonly userInput: Locator;
+  readonly borrowButton: Locator;
+  readonly returnButton: Locator;
+  readonly deleteButton: Locator;
+  readonly editButton: Locator;
+  readonly backButton: Locator;
+
+  readonly errorText: Locator;
+  readonly loadingSpinner: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    this.title = page.locator('ion-card-title');
-    this.author = page.locator('ion-card-subtitle');
-    this.genre = page.getByText('Genre:');
-    this.copies = page.getByText('Available copies:');
+    this.title = page.locator('#book-details-title');
+    this.author = page.locator('#book-details-author');
+    this.genre = page.locator('#book-details-genre');
+    this.copies = page.locator('#book-details-copies');
 
-    this.userInput = page.locator('ion-input[name="borrowUserName"] input');
-    this.borrowButton = page.getByRole('button', { name: 'borrow book' });
-    this.returnButton = page.getByRole('button', { name: 'return this book' });
-    this.deleteButton = page.getByRole('button', { name: 'delete book' });
-    this.editButton = page.getByRole('button', { name: 'edit book' });
-    this.backButton = page.getByRole('button', { name: 'back to list' });
+    this.userInput = page.locator('#borrow-username-input input');
+
+    this.borrowButton = page.locator('#borrow-book-btn');
+    this.returnButton = page.locator('#return-book-btn');
+    this.deleteButton = page.locator('#delete-book-btn');
+    this.editButton = page.locator('#edit-book-btn');
+    this.backButton = page.locator('#back-to-list-btn');
+
+    this.errorText = page.locator('#book-details-error');
+    this.loadingSpinner = page.locator('#book-details-loading');
   }
 
-  async goto(id: number) {
+  async goto(id: number): Promise<void> {
     await this.page.goto(`/books/${id}`);
   }
 
-  async borrowAs(user: string) {
+  async borrowAs(user: string): Promise<void> {
     await this.userInput.fill(user);
     await this.borrowButton.click();
   }
 
-  async returnBook() {
+  async returnBook(): Promise<void> {
     await this.returnButton.click();
   }
 
-  async deleteBook() {
+  async deleteBook(): Promise<void> {
     this.page.once('dialog', d => d.accept());
     await this.deleteButton.click();
   }
 
-  async goBack() {
+  async goBack(): Promise<void> {
     await this.backButton.click();
   }
 
-  async goToEdit() {
+  async goToEdit(): Promise<void> {
     await this.editButton.click();
   }
 }

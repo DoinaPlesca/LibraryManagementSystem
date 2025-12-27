@@ -1,68 +1,69 @@
 import { Page, Locator } from '@playwright/test';
 
 export class BookEditPage {
-    private page: Page;
+  private readonly page: Page;
 
-    titleInput: Locator;
-    genreInput: Locator;
-    authorSelect: Locator;
-    copiesInput: Locator;
+  readonly titleInput: Locator;
+  readonly genreInput: Locator;
+  readonly copiesInput: Locator;
+  readonly authorSelect: Locator;
 
-    saveButton: Locator;
-    cancelButton: Locator;
+  readonly saveButton: Locator;
+  readonly cancelButton: Locator;
 
-    errorText: Locator;
+  readonly errorText: Locator;
+  readonly loadingSpinner: Locator;
 
-    constructor(page: Page) {
-        this.page = page;
+  constructor(page: Page) {
+    this.page = page;
 
-        this.titleInput = page.locator('ion-input[name="title"] input');
-        this.genreInput = page.locator('ion-input[name="genre"] input');
-        this.copiesInput = page.locator('ion-input[name="availableCopies"] input');
+    this.titleInput = page.locator('#book-edit-title-input input');
+    this.genreInput = page.locator('#book-edit-genre-input input');
+    this.copiesInput = page.locator('#book-edit-copies-input input');
 
-        this.authorSelect = page.locator('ion-select[name="authorId"]');
+    this.authorSelect = page.locator('#book-edit-author-select');
 
-        this.saveButton = page.locator('ion-button', { hasText: 'Save Changes' });
-        this.cancelButton = page.locator('ion-button', { hasText: 'Cancel' });
+    this.saveButton = page.locator('#book-edit-save-btn');
+    this.cancelButton = page.locator('#book-edit-cancel-btn');
 
-        this.errorText = page.locator('ion-text[color="danger"]');
-        // missing id here as well, this is the only way I can refer to it
-    }
+    this.errorText = page.locator('#book-edit-error');
+    this.loadingSpinner = page.locator('#book-edit-loading');
+  }
 
-    async goto(id: number) {
-        await this.page.goto(`/books/${id}/edit`);
-    }
+  async goto(id: number): Promise<void> {
+    await this.page.goto(`/books/${id}/edit`);
+  }
 
-    async setTitle(title: string) {
-        await this.titleInput.fill(title);
-    }
+  async setTitle(title: string): Promise<void> {
+    await this.titleInput.fill(title);
+  }
 
-    async setGenre(genre: string) {
-        await this.genreInput.fill(genre);
-    }
+  async setGenre(genre: string): Promise<void> {
+    await this.genreInput.fill(genre);
+  }
 
-    async setCopies(copies: number) {
-        await this.copiesInput.fill(String(copies));
-    }
+  async setCopies(copies: number): Promise<void> {
+    await this.copiesInput.fill(String(copies));
+  }
 
-    async selectAuthor(name: string) {
-        await this.authorSelect.click();
+  async selectAuthor(name: string): Promise<void> {
+    await this.authorSelect.click();
 
-        const radio = this.page
-            .locator('ion-radio')
-            .filter({ hasText: name })
-            .first();
+    const option = this.page
+      .locator('ion-alert, ion-popover')
+      .locator('button, ion-item')
+      .filter({ hasText: name })
+      .first();
 
-        await radio.waitFor({ state: 'visible' });
-        await radio.click();
-    }
+    await option.waitFor({ state: 'visible' });
+    await option.click();
+  }
 
+  async save(): Promise<void> {
+    await this.saveButton.click();
+  }
 
-    async save() {
-        await this.saveButton.click();
-    }
-
-    async cancel() {
-        await this.cancelButton.click();
-    }
+  async cancel(): Promise<void> {
+    await this.cancelButton.click();
+  }
 }

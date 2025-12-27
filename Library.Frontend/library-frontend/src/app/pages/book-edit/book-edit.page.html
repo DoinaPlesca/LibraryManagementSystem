@@ -5,71 +5,90 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-spinner *ngIf="loading"></ion-spinner>
 
-  <ion-text color="danger" *ngIf="error">
+  <ion-spinner
+    id="book-edit-loading"
+    *ngIf="loading">
+  </ion-spinner>
+
+  <ion-text
+    id="book-edit-error"
+    color="danger"
+    *ngIf="error">
     <p>{{ error }}</p>
   </ion-text>
 
   <form *ngIf="!loading">
+
     <ion-item>
-      <ion-label position="stacked">Title</ion-label>
+      <ion-label position="stacked" for="book-edit-title-input">
+        Title
+      </ion-label>
       <ion-input
+        id="book-edit-title-input"
         [(ngModel)]="form.title"
         name="title"
-        placeholder="Book title"
-      ></ion-input>
+        placeholder="Book title">
+      </ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">Genre</ion-label>
+      <ion-label position="stacked" for="book-edit-genre-input">
+        Genre
+      </ion-label>
       <ion-input
+        id="book-edit-genre-input"
         [(ngModel)]="form.genre"
         name="genre"
-        placeholder="Genre"
-      ></ion-input>
+        placeholder="Genre">
+      </ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">Author</ion-label>
+      <ion-label position="stacked" for="book-edit-author-select">
+        Author
+      </ion-label>
       <ion-select
+        id="book-edit-author-select"
         [(ngModel)]="form.authorId"
         name="authorId"
-        interface="popover"
-      >
+        interface="popover">
         <ion-select-option
           *ngFor="let a of authors"
-          [value]="a.id"
-        >
+          [value]="a.id">
           {{ a.name }} ({{ a.nationality }})
         </ion-select-option>
       </ion-select>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">Available Copies</ion-label>
+      <ion-label position="stacked" for="book-edit-copies-input">
+        Available Copies
+      </ion-label>
       <ion-input
+        id="book-edit-copies-input"
         type="number"
         [(ngModel)]="form.availableCopies"
         name="availableCopies"
-        min="0"
-      ></ion-input>
+        min="0">
+      </ion-input>
     </ion-item>
 
     <ion-button
+      id="book-edit-save-btn"
       expand="block"
       (click)="save()"
-      [disabled]="saving"
-    >
+      [disabled]="saving">
       {{ saving ? 'Saving...' : 'Save Changes' }}
     </ion-button>
 
     <ion-button
+      id="book-edit-cancel-btn"
       expand="block"
       color="medium"
-      [routerLink]="['/books', bookId]"
-    >
+      [routerLink]="['/books', bookId]">
       Cancel
     </ion-button>
+
   </form>
 </ion-content>

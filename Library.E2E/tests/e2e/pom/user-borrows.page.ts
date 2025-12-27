@@ -1,47 +1,44 @@
 import { Page, Locator } from '@playwright/test';
 
 export class UserBorrowsPage {
-  private page: Page;
+  private readonly page: Page;
 
-  userInput: Locator;
-  loadButton: Locator;
+  readonly userInput: Locator;
+  readonly loadButton: Locator;
 
-  spinner: Locator;
-  errorText: Locator;
+  readonly spinner: Locator;
+  readonly errorText: Locator;
 
-  borrowsList: Locator;
-  emptyText: Locator;
+  readonly borrowsList: Locator;
+  readonly emptyText: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    this.userInput = page.locator('ion-input[name="userName"] input');
-    this.loadButton = page.locator('ion-button', { hasText: 'Load My Borrows' });
+    this.userInput = page.locator('#borrows-username-input input');
+    this.loadButton = page.locator('#borrows-load-btn');
 
-    this.spinner = page.locator('ion-spinner');
-    this.errorText = page.locator('ion-text[color="danger"]');
+    this.spinner = page.locator('#borrows-loading');
+    this.errorText = page.locator('#borrows-error');
 
-    this.borrowsList = page.locator('ion-list');
-    this.emptyText = page.getByText('No borrow records for this user.');
+    this.borrowsList = page.locator('#borrows-list');
+    this.emptyText = page.locator('#borrows-empty');
   }
 
-  async goto() {
+  async goto(): Promise<void> {
     await this.page.goto('/borrows');
   }
 
-  async setUser(name: string) {
+  async setUser(name: string): Promise<void> {
     await this.userInput.fill(name);
   }
 
-  async load() {
+  async load(): Promise<void> {
     await this.loadButton.click();
   }
 
-  async returnFirst() {
-    const returnBtn = this.page
-      .locator('ion-button', { hasText: 'Return' })
-      .first();
-
+  async returnFirst(): Promise<void> {
+    const returnBtn = this.page.locator('[id^="return-btn-"]').first();
     await returnBtn.click();
   }
 }

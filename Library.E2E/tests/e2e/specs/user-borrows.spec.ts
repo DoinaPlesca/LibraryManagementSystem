@@ -37,11 +37,9 @@ test.describe('User Borrows page', () => {
     return { borrowsPage };
   }
 
-  test('Page loads and shows main UI elements', async ({ page }) => {
+  test('Loads and shows main UI elements', async ({ page }) => {
     // Arrange
     const { borrowsPage } = await setupEmpty(page);
-
-    // Act (nothing)
 
     // Assert
     await expect(borrowsPage.userInput).toBeVisible();
@@ -71,22 +69,31 @@ test.describe('User Borrows page', () => {
 
     // Assert
     await expect(borrowsPage.borrowsList).toBeVisible();
-    await expect(page.getByText('E2E Borrow Book').first()).toBeVisible();
+    await expect(page.locator('#borrow-book-title-0'))
+      .toHaveText('E2E Borrow Book');
 
     // Clean
     await api.deleteBook(bookId);
   });
 
-  test('Shows empty state if user has no borrows', async ({ page }) => {
+  test('User can return a borrowed book', async ({ page, api }) => {
     // Arrange
-    const { borrowsPage } = await setupEmpty(page);
+    const { borrowsPage, bookId } = await setupWithBorrow(page, api);
 
-    // Act
-    await borrowsPage.setUser('NoSuchUser123');
+    await borrowsPage.setUser(userName);
     await borrowsPage.load();
 
+    // Act
+    await borrowsPage.returnFirst();
+
     // Assert
-    await expect(borrowsPage.errorText)
-      .toContainText('Failed to load borrows');       
+    const returnedText = page.locator('#return-date-0');
+
+    await expect(returnedText).toBeVisible();
+    await expect(returnedText).toContainText('Returned on');
+
+    // Clean
+    await api.deleteBook(bookId);
   });
+
 });

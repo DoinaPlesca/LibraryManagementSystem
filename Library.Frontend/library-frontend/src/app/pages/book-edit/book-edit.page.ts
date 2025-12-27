@@ -8,24 +8,28 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   BooksService,
   Book,
-  UpdateBookPayload,
+  UpdateBookPayload
 } from '../../services/books.service';
-import { AuthorsService, Author } from '../../services/authors.service';
+import {
+  AuthorsService,
+  Author
+} from '../../services/authors.service';
 
 @Component({
   selector: 'app-book-edit',
   standalone: true,
   templateUrl: './book-edit.page.html',
-  styleUrls: ['./book-edit.page.scss'], // comment out if no scss
+  styleUrls: ['./book-edit.page.scss'],
   imports: [
     IonicModule,
     CommonModule,
     HttpClientModule,
     FormsModule,
-    RouterLink,
+    RouterLink
   ],
 })
 export class BookEditPage implements OnInit {
+
   bookId!: number;
 
   authors: Author[] = [];
@@ -37,14 +41,14 @@ export class BookEditPage implements OnInit {
     title: '',
     genre: '',
     authorId: 0,
-    availableCopies: 0,
+    availableCopies: 0
   };
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private booksService: BooksService,
-    private authorsService: AuthorsService
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly booksService: BooksService,
+    private readonly authorsService: AuthorsService
   ) {}
 
   ngOnInit(): void {
@@ -66,8 +70,7 @@ export class BookEditPage implements OnInit {
       next: (authors: Author[]) => {
         this.authors = authors;
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to load authors';
       },
     });
@@ -75,19 +78,18 @@ export class BookEditPage implements OnInit {
 
   loadBook(): void {
     this.loading = true;
+
     this.booksService.getBook(this.bookId).subscribe({
       next: (book: Book) => {
         this.loading = false;
         this.form = {
           title: book.title,
           genre: book.genre,
-          authorId: book.authorId,          // assuming your Book type has authorId
-          availableCopies: book.availableCopies,
-
+          authorId: book.authorId,
+          availableCopies: book.availableCopies
         };
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to load book';
         this.loading = false;
       },
@@ -116,11 +118,9 @@ export class BookEditPage implements OnInit {
     this.booksService.updateBook(this.bookId, this.form).subscribe({
       next: () => {
         this.saving = false;
-        // back to book details
         this.router.navigateByUrl(`/books/${this.bookId}`);
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to update book';
         this.saving = false;
       },

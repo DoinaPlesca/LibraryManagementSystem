@@ -6,36 +6,27 @@
 
 <ion-content class="ion-padding">
   <ion-item>
-    <ion-label position="stacked">Name</ion-label>
-    <ion-input
-      [(ngModel)]="newAuthor.name"
-      name="name"
-      placeholder="e.g. J.K. Rowling"
-    ></ion-input>
+    <ion-label position="stacked" for="author-name-input">Name</ion-label>
+    <ion-input id="author-name-input" [(ngModel)]="newAuthor.name" name="name" placeholder="e.g. J.K. Rowling">
+    </ion-input>
   </ion-item>
 
   <ion-item>
-    <ion-label position="stacked">Nationality</ion-label>
-    <ion-input
-      [(ngModel)]="newAuthor.nationality"
-      name="nationality"
-      placeholder="e.g. British"
-    ></ion-input>
+    <ion-label position="stacked" for="author-nationality-input">Nationality</ion-label>
+    <ion-input id="author-nationality-input" [(ngModel)]="newAuthor.nationality" name="nationality"
+      placeholder="e.g. British">
+    </ion-input>
   </ion-item>
 
-  <ion-text color="danger" *ngIf="error">
+  <ion-text id="author-create-error" color="danger" *ngIf="error">
     <p>{{ error }}</p>
   </ion-text>
 
-  <ion-button
-    expand="block"
-    (click)="saveAuthor()"
-    [disabled]="submitting"
-  >
+  <ion-button id="author-save-btn" expand="block" (click)="saveAuthor()" [disabled]="submitting">
     {{ submitting ? 'Saving...' : 'Save Author' }}
   </ion-button>
 
-  <ion-button expand="block" routerLink="/home" color="medium">
+  <ion-button id="author-cancel-btn" expand="block" color="medium" routerLink="/home">
     Cancel
   </ion-button>
 </ion-content>

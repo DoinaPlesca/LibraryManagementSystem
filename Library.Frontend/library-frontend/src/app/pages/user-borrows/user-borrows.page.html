@@ -5,55 +5,79 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+
   <ion-item>
-    <ion-label position="stacked">User Name</ion-label>
+    <ion-label position="stacked" for="borrows-username-input">
+      User Name
+    </ion-label>
     <ion-input
+      id="borrows-username-input"
       [(ngModel)]="userName"
       name="userName"
-      placeholder="Enter your username"
-    ></ion-input>
+      placeholder="Enter your username">
+    </ion-input>
   </ion-item>
 
-  <ion-button expand="block" (click)="loadBorrows()">
+  <ion-button
+    id="borrows-load-btn"
+    expand="block"
+    (click)="loadBorrows()">
     Load My Borrows
   </ion-button>
 
-  <ion-spinner *ngIf="loading"></ion-spinner>
+  <ion-spinner
+    id="borrows-loading"
+    *ngIf="loading">
+  </ion-spinner>
 
-  <ion-text color="danger" *ngIf="error">
+  <ion-text
+    id="borrows-error"
+    color="danger"
+    *ngIf="error">
     <p>{{ error }}</p>
   </ion-text>
 
-  <ion-list *ngIf="!loading && borrows.length">
-    <ion-item *ngFor="let br of borrows">
+  <ion-list
+    id="borrows-list"
+    *ngIf="!loading && borrows.length">
+
+    <ion-item *ngFor="let br of borrows; let i = index"
+              [attr.id]="'borrow-item-' + i">
+
       <ion-label>
-        <h2>{{ br.bookTitle }}</h2>
-        <p>
-          Borrowed on:
-          {{ br.borrowDate | date: 'short' }}
+        <h2 [id]="'borrow-book-title-' + i">
+          {{ br.bookTitle }}
+        </h2>
+        <p [id]="'borrow-date-' + i">
+          Borrowed on: {{ br.borrowDate | date: 'short' }}
         </p>
-        <p *ngIf="br.returnDate">
-          Returned on:
-          {{ br.returnDate | date: 'short' }}
+        <p *ngIf="br.returnDate"
+           [id]="'return-date-' + i">
+          Returned on: {{ br.returnDate | date: 'short' }}
         </p>
-        <p *ngIf="!br.returnDate">
+        <p *ngIf="!br.returnDate"
+           [id]="'not-returned-' + i">
           Not returned yet
         </p>
       </ion-label>
 
       <ion-button
+        [id]="'return-btn-' + i"
         slot="end"
         color="medium"
         size="small"
         (click)="returnBorrow(br)"
-        [disabled]="!!br.returnDate || returningId === br.id"
-      >
+        [disabled]="!!br.returnDate || returningId === br.id">
         {{ returningId === br.id ? 'Returning...' : 'Return' }}
       </ion-button>
+
     </ion-item>
   </ion-list>
 
-  <p *ngIf="!loading && !borrows.length && !error">
+  <p
+    id="borrows-empty"
+    *ngIf="!loading && !borrows.length && !error">
     No borrow records for this user.
   </p>
+
 </ion-content>

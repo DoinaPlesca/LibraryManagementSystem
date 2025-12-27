@@ -20,20 +20,20 @@ test.describe('Book Details page', () => {
     const details = new BookDetailsPage(page);
     await details.goto(book.data.id);
 
-    return { details, bookId: book.data.id };
+    return {
+      details,
+      bookId: book.data.id
+    };
   }
 
-  // TODO: If author gets delete, update clean to delete authors as well
-  test('Book details page loads and shows book info', async ({ page, api }) => {
+  test('Loads and shows book information', async ({ page, api }) => {
     // Arrange
     const { details, bookId } = await setup(page, api);
-
-    // Act (nothing)
 
     // Assert
     await expect(details.title).toHaveText('E2E Details Book');
     await expect(details.author).toHaveText('E2E Details Author');
-    await expect(details.genre).toBeVisible();
+    await expect(details.genre).toContainText('Fantasy');
     await expect(details.copies).toContainText('2');
 
     // Clean
@@ -72,7 +72,7 @@ test.describe('Book Details page', () => {
 
   test('User can delete a book and is redirected to home', async ({ page, api }) => {
     // Arrange
-    const { details, bookId } = await setup(page, api);
+    const { details } = await setup(page, api);
 
     // Act
     await details.deleteBook();
@@ -89,7 +89,7 @@ test.describe('Book Details page', () => {
     await details.goToEdit();
 
     // Assert
-    await expect(page).toHaveURL(new RegExp(`/books/${bookId}/edit$`));
+    await expect(page).toHaveURL(`/books/${bookId}/edit`);
 
     // Clean
     await api.deleteBook(bookId);

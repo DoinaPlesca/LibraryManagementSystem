@@ -3,7 +3,6 @@ import { Page, Locator } from '@playwright/test';
 export class HomePage {
     readonly page: Page;
 
-    readonly header: Locator;
     readonly title: Locator;
 
     readonly addNewBookButton: Locator;
@@ -14,47 +13,58 @@ export class HomePage {
     readonly errorText: Locator;
     readonly noBooksText: Locator;
 
-    readonly bookItems: Locator;
+    readonly booksList: Locator;
 
     constructor(page: Page) {
         this.page = page;
 
-        this.header = page.locator('ion-header');
-        this.title = page.getByText('Library – Books');
+        this.title = page.locator('#home-title');
 
-        this.addNewBookButton = page.locator('ion-button:has-text("Add New Book")');
-        this.reloadButton = page.locator('ion-button:has-text("Reload from API")');
-        this.viewBorrowsButton = page.locator('ion-button:has-text("View My Borrows")');
+        this.addNewBookButton = page.locator('#home-add-book-btn');
+        this.reloadButton = page.locator('#home-reload-btn');
+        this.viewBorrowsButton = page.locator('#home-view-borrows-btn');
 
-        this.loadingSpinner = page.locator('ion-spinner');
-        this.errorText = page.locator('ion-text[color="danger"]');
-        this.noBooksText = page.getByText('No books found.');
+        this.loadingSpinner = page.locator('#home-loading');
+        this.errorText = page.locator('#home-error');
+        this.noBooksText = page.locator('#home-empty');
 
-        this.bookItems = page.locator('ion-item');
+        this.booksList = page.locator('#home-books-list');
     }
 
-    async goto() {
+    async goto(): Promise<void> {
         await this.page.goto('/');
     }
 
-    async waitForLoaded() {
+    async waitForLoaded(): Promise<void> {
         await this.title.waitFor({ state: 'visible' });
         await this.loadingSpinner.waitFor({ state: 'hidden' }).catch(() => { });
     }
 
-    async clickAddNewBook() {
+    async clickAddNewBook(): Promise<void> {
         await this.addNewBookButton.click();
     }
 
-    async clickReload() {
+    async clickReload(): Promise<void> {
         await this.reloadButton.click();
     }
 
-    async clickViewBorrows() {
+    async clickViewBorrows(): Promise<void> {
         await this.viewBorrowsButton.click();
     }
 
-    async openBookByTitle(title: string) {
-        await this.page.getByRole('heading', { name: title }).first().click();
+    bookTitleAt(index: number): Locator {
+        return this.page.locator(`#home-book-title-${index}`);
+    }
+
+    async openBookAt(index: number): Promise<void> {
+        await this.page.locator(`#home-book-item-${index}`).click();
+    }
+
+    bookByTitle(title: string): Locator {
+        return this.page.locator('#home-books-list h2', { hasText: title }).first();
+    }
+
+    async openBookByTitle(title: string): Promise<void> {
+        await this.bookByTitle(title).first().click();
     }
 }

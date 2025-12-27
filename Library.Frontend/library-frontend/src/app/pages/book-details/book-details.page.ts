@@ -4,35 +4,42 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+
 import { BooksService, Book } from '../../services/books.service';
 import {
   BorrowService,
-  BorrowRecord,
+  BorrowRecord
 } from '../../services/borrow.service';
 
 @Component({
   selector: 'app-book-details',
   standalone: true,
   templateUrl: './book-details.page.html',
-  styleUrls: ['./book-details.page.scss'], // or comment out if file missing
-  imports: [IonicModule, CommonModule, HttpClientModule, FormsModule, RouterLink],
+  styleUrls: ['./book-details.page.scss'],
+  imports: [
+    IonicModule,
+    CommonModule,
+    HttpClientModule,
+    FormsModule,
+    RouterLink
+  ],
 })
 export class BookDetailsPage implements OnInit {
+
   book: Book | null = null;
   loading = false;
   deleting = false;
   error: string | null = null;
 
-  // Borrow UI state
   borrowUserName = '';
   borrowing = false;
   lastBorrow: BorrowRecord | null = null;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private booksService: BooksService,
-    private borrowService: BorrowService
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly booksService: BooksService,
+    private readonly borrowService: BorrowService
   ) {}
 
   ngOnInit(): void {
@@ -47,9 +54,6 @@ export class BookDetailsPage implements OnInit {
     this.loadBook(id);
   }
 
-
-
-
   loadBook(id: number): void {
     this.loading = true;
     this.error = null;
@@ -59,8 +63,7 @@ export class BookDetailsPage implements OnInit {
         this.book = book;
         this.loading = false;
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to load book';
         this.loading = false;
       },
@@ -88,11 +91,10 @@ export class BookDetailsPage implements OnInit {
         if (success) {
           this.router.navigateByUrl('/home');
         } else {
-          this.error = 'Book could not be deleted (maybe active borrow?).';
+          this.error = 'Book could not be deleted';
         }
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to delete book';
         this.deleting = false;
       },
@@ -124,11 +126,9 @@ export class BookDetailsPage implements OnInit {
         next: (record: BorrowRecord) => {
           this.borrowing = false;
           this.lastBorrow = record;
-          // Refresh book info – availableCopies should decrease
           this.loadBook(this.book!.id);
         },
-        error: (err: any) => {
-          console.error(err);
+        error: () => {
           this.error = 'Failed to borrow book';
           this.borrowing = false;
         },
@@ -148,13 +148,11 @@ export class BookDetailsPage implements OnInit {
       next: (record: BorrowRecord) => {
         this.borrowing = false;
         this.lastBorrow = record;
-        // Refresh book info – availableCopies should increase
         if (this.book) {
           this.loadBook(this.book.id);
         }
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to return book';
         this.borrowing = false;
       },

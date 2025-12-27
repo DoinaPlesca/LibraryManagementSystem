@@ -1,46 +1,43 @@
 import { Page, Locator } from '@playwright/test';
 
 export class AuthorCreatePage {
-  private page: Page;
+  private readonly page: Page;
 
-  nameInput: Locator;
-  nationalityInput: Locator;
+  readonly nameInput: Locator;
+  readonly nationalityInput: Locator;
 
-  saveButton: Locator;
-  cancelButton: Locator;
+  readonly saveButton: Locator;
+  readonly cancelButton: Locator;
 
-  errorText: Locator;
+  readonly errorText: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    this.nameInput = page.locator('ion-input[name="name"] input');
-    this.nationalityInput = page.locator('ion-input[name="nationality"] input');
-
-    this.saveButton = page.locator('ion-button', { hasText: 'Save Author' });
-    this.cancelButton = page.locator('ion-button', { hasText: 'Cancel' });
-
-    this.errorText = page.locator('ion-text[color="danger"]');
-    // this is really bad practice but there's no id or any kind of an identifier on the frontend
+    this.nameInput = page.locator('ion-input#author-name-input input');
+    this.nationalityInput = page.locator('ion-input#author-nationality-input input');
+    this.saveButton = page.locator('#author-save-btn');
+    this.cancelButton = page.locator('#author-cancel-btn');
+    this.errorText = page.locator('#author-create-error');
   }
 
-  async goto() {
+  async goto(): Promise<void> {
     await this.page.goto('/authors/new');
   }
 
-  async setName(name: string) {
+  async setName(name: string): Promise<void> {
     await this.nameInput.fill(name);
   }
 
-  async setNationality(nationality: string) {
+  async setNationality(nationality: string): Promise<void> {
     await this.nationalityInput.fill(nationality);
   }
 
-  async save() {
+  async save(): Promise<void> {
     await this.saveButton.click();
   }
 
-  async cancel() {
+  async cancel(): Promise<void> {
     await this.cancelButton.click();
   }
 }

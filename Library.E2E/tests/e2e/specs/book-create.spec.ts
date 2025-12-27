@@ -4,73 +4,70 @@ import { BookCreatePage } from '../pom/book-create.page';
 
 test.describe('Create Book page', () => {
 
-    async function setup(page: Page) {
-        const createPage = new BookCreatePage(page);
-        await createPage.goto();
-        return { createPage };
-    }
+  async function setup(page: Page) {
+    const createPage = new BookCreatePage(page);
+    await createPage.goto();
+    return { createPage };
+  }
 
-    // TODO: If author gets delete, update clean to delete authors as well
-    test('Create Book page loads and shows main UI elements', async ({ page }) => {
-        // Arrange
-        const { createPage } = await setup(page);
+  test('Create Book page loads and shows main UI elements', async ({ page }) => {
+    // Arrange
+    const { createPage } = await setup(page);
 
-        // Act (nothing needed)
+    // Assert
+    await expect(createPage.titleInput).toBeVisible();
+    await expect(createPage.genreInput).toBeVisible();
+    await expect(createPage.copiesInput).toBeVisible();
+    await expect(createPage.authorSelect).toBeVisible();
+    await expect(createPage.saveButton).toBeVisible();
+    await expect(createPage.addAuthorButton).toBeVisible();
+  });
 
-        // Assert
-        await expect(createPage.titleInput).toBeVisible();
-        await expect(createPage.genreInput).toBeVisible();
-        await expect(createPage.copiesInput).toBeVisible();
-        await expect(createPage.authorSelect).toBeVisible();
-        await expect(createPage.saveButton).toBeVisible();
-        await expect(createPage.addAuthorButton).toBeVisible();
+  test('User can create a new book from UI', async ({ page, api }) => {
+    // Arrange
+    const author = await api.createAuthor({
+      name: 'E2E Create Author',
+      nationality: 'Test'
     });
 
-    test('User can create a new book from UI', async ({ page, api }) => {
-        // Arrange
-        const author = await api.createAuthor({
-            name: 'E2E Create Author',
-            nationality: 'Test'
-        });
+    const bookTitle = 'E2E Created Book';
+    const createPage = new BookCreatePage(page);
+    await createPage.goto();
 
-        const bookTitle = 'E2E Created Book';
-        const createPage = new BookCreatePage(page);
+    // Act
+    await createPage.setTitle(bookTitle);
+    await createPage.setGenre('Adventure');
+    await createPage.setCopies(4);
+    await createPage.selectAuthorByName(author.data.name);
 
-        await createPage.goto();
+    const [response] = await Promise.all([
+      page.waitForResponse(res =>
+        res.url().includes('/api/books') &&
+        res.request().method() === 'POST'
+      ),
+      createPage.save()
+    ]);
 
-        // Act
-        await createPage.fillTitle(bookTitle);
-        await createPage.fillGenre('Adventure');
-        await createPage.fillCopies(4);
-        await createPage.selectAuthorByName('E2E Create Author');
-        
-        const [response] = await Promise.all([
-            page.waitForResponse(res =>
-                res.url().includes('/api/books') && res.request().method() === 'POST'
-            ),
-            createPage.save()
-        ]);
+    const json = await response.json();
+    const bookId = json.data.id;
 
-        const json = await response.json();
-        const bookId = json.data.id;
+    // Assert
+    await expect(page).toHaveURL('/home');
+    await expect(page.getByText(bookTitle).first()).toBeVisible();
 
-        // Assert
-        await expect(page).toHaveURL('home');
-        await expect(page.getByText(bookTitle).first()).toBeVisible();
+    // Clean
+    await api.deleteBook(bookId);
+  });
 
-        // Clean
-        await api.deleteBook(bookId);
-    });
+  test('Clicking Add new author navigates to author creation page', async ({ page }) => {
+    // Arrange
+    const { createPage } = await setup(page);
 
-    test('Clicking Add new author navigates to author creation page', async ({ page }) => {
-        // Arrange
-        const { createPage } = await setup(page);
+    // Act
+    await createPage.clickAddNewAuthor();
 
-        // Act
-        await createPage.clickAddNewAuthor();
-
-        // Assert
-        await expect(page).toHaveURL('/authors/new');
-    });
+    // Assert
+    await expect(page).toHaveURL('/authors/new');
+  });
 
 });

@@ -3,64 +3,72 @@ import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { Router, RouterLink } from '@angular/router';
+
 import {
   BooksService,
-  CreateBookPayload,
+  CreateBookPayload
 } from '../../services/books.service';
-import { AuthorsService, Author } from '../../services/authors.service';
-import { Router } from '@angular/router';
-import { RouterLink } from '@angular/router';
+import {
+  AuthorsService,
+  Author
+} from '../../services/authors.service';
 
 @Component({
   selector: 'app-book-create',
   standalone: true,
   templateUrl: './book-create.page.html',
   styleUrls: ['./book-create.page.scss'],
-  imports: [IonicModule, CommonModule, FormsModule, HttpClientModule, RouterLink],
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    HttpClientModule,
+    RouterLink
+  ],
 })
 export class BookCreatePage implements OnInit {
+
   authors: Author[] = [];
   loadingAuthors = false;
   submitting = false;
   error: string | null = null;
 
-  // form model – matches CreateBookDto / CreateBookPayload
   newBook: CreateBookPayload = {
     title: '',
     genre: '',
     authorId: 0,
-    availableCopies: 1,
+    availableCopies: 1
   };
 
   constructor(
-    private booksService: BooksService,
-    private authorsService: AuthorsService,
-    private router: Router
+    private readonly booksService: BooksService,
+    private readonly authorsService: AuthorsService,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadAuthors();
   }
 
+  ionViewWillEnter(): void {
+    this.loadAuthors();
+  }
+
   loadAuthors(): void {
     this.loadingAuthors = true;
+
     this.authorsService.getAuthors().subscribe({
       next: (authors) => {
         this.authors = authors;
         this.loadingAuthors = false;
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to load authors';
         this.loadingAuthors = false;
-      },
+      }
     });
   }
-
-  ionViewWillEnter(): void {
-    this.loadAuthors();
-  }
-
 
   saveBook(): void {
     if (!this.newBook.title.trim() || !this.newBook.genre.trim()) {
@@ -84,14 +92,12 @@ export class BookCreatePage implements OnInit {
     this.booksService.createBook(this.newBook).subscribe({
       next: () => {
         this.submitting = false;
-        // Go back to books list
         this.router.navigateByUrl('/home');
       },
-      error: (err) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to create book';
         this.submitting = false;
-      },
+      }
     });
   }
 }

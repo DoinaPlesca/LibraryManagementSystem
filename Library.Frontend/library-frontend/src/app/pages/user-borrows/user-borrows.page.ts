@@ -3,23 +3,35 @@ import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { BorrowService, BorrowRecord } from '../../services/borrow.service';
+
+import {
+  BorrowService,
+  BorrowRecord
+} from '../../services/borrow.service';
 
 @Component({
   selector: 'app-user-borrows',
   standalone: true,
   templateUrl: './user-borrows.page.html',
-  styleUrls: ['./user-borrows.page.scss'], // or comment out if scss missing
-  imports: [IonicModule, CommonModule, HttpClientModule, FormsModule],
+  styleUrls: ['./user-borrows.page.scss'],
+  imports: [
+    IonicModule,
+    CommonModule,
+    HttpClientModule,
+    FormsModule
+  ],
 })
 export class UserBorrowsPage {
+
   userName = '';
   borrows: BorrowRecord[] = [];
   loading = false;
   error: string | null = null;
   returningId: number | null = null;
 
-  constructor(private borrowService: BorrowService) {}
+  constructor(
+    private readonly borrowService: BorrowService
+  ) {}
 
   loadBorrows(): void {
     const name = this.userName.trim();
@@ -36,8 +48,7 @@ export class UserBorrowsPage {
         this.borrows = records;
         this.loading = false;
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to load borrows';
         this.loading = false;
       },
@@ -55,11 +66,9 @@ export class UserBorrowsPage {
     this.borrowService.returnBook(record.id).subscribe({
       next: () => {
         this.returningId = null;
-        // reload list after return
         this.loadBorrows();
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         this.error = 'Failed to return book';
         this.returningId = null;
       },

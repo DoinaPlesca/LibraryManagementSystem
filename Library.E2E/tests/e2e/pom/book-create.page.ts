@@ -1,60 +1,63 @@
 import { Page, Locator } from '@playwright/test';
 
 export class BookCreatePage {
-    private page: Page;
+  private readonly page: Page;
 
-    titleInput: Locator;
-    genreInput: Locator;
-    copiesInput: Locator;
-    authorSelect: Locator;
-    saveButton: Locator;
-    addAuthorButton: Locator;
+  readonly titleInput: Locator;
+  readonly genreInput: Locator;
+  readonly copiesInput: Locator;
+  readonly authorSelect: Locator;
 
-    constructor(page: Page) {
-        this.page = page;
+  readonly saveButton: Locator;
+  readonly addAuthorButton: Locator;
+  readonly errorText: Locator;
 
-        this.titleInput = this.page.locator('ion-input[name="title"] input');
-        this.genreInput = this.page.locator('ion-input[name="genre"] input');
-        this.copiesInput = this.page.locator('ion-input[name="availableCopies"] input');
-        this.authorSelect = this.page.locator('ion-select[name="authorId"]');
+  constructor(page: Page) {
+    this.page = page;
 
-        this.saveButton = this.page.locator('ion-button', { hasText: 'Save Book' });
-        this.addAuthorButton = this.page.locator('ion-button', { hasText: 'Add new author' });
-    }
+    this.titleInput = page.locator('#book-title-input input');
+    this.genreInput = page.locator('#book-genre-input input');
+    this.copiesInput = page.locator('#book-copies-input input');
+    this.authorSelect = page.locator('#book-author-select');
+    this.saveButton = page.locator('#book-save-btn');
+    this.addAuthorButton = page.locator('#book-add-author-btn');
+    this.errorText = page.locator('#book-create-error');
+  }
 
-    async goto() {
-        await this.page.goto('/books/new');
-    }
+  async goto(): Promise<void> {
+    await this.page.goto('/books/new');
+  }
 
-    async fillTitle(title: string) {
-        await this.titleInput.fill(title);
-    }
+  async setTitle(title: string): Promise<void> {
+    await this.titleInput.fill(title);
+  }
 
-    async fillGenre(genre: string) {
-        await this.genreInput.fill(genre);
-    }
+  async setGenre(genre: string): Promise<void> {
+    await this.genreInput.fill(genre);
+  }
 
-    async fillCopies(copies: number) {
-        await this.copiesInput.fill(String(copies));
-    }
+  async setCopies(copies: number): Promise<void> {
+    await this.copiesInput.fill(String(copies));
+  }
 
-    async selectAuthorByName(name: string) {
-        await this.authorSelect.click();
+  async selectAuthorByName(name: string): Promise<void> {
+    await this.authorSelect.click();
 
-        const radio = this.page
-            .locator('ion-radio')
-            .filter({ hasText: name })
-            .first();
+    const option = this.page
+      .locator('ion-alert, ion-popover')
+      .locator('button, ion-item')
+      .filter({ hasText: name })
+      .first();
 
-        await radio.waitFor({ state: 'visible' });
-        await radio.click();
-    }
+    await option.waitFor({ state: 'visible' });
+    await option.click();
+  }
 
-    async save() {
-        await this.saveButton.click();
-    }
+  async save(): Promise<void> {
+    await this.saveButton.click();
+  }
 
-    async clickAddNewAuthor() {
-        await this.addAuthorButton.click();
-    }
+  async clickAddNewAuthor(): Promise<void> {
+    await this.addAuthorButton.click();
+  }
 }
