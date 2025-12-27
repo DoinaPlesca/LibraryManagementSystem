@@ -27,8 +27,8 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install CycloneDX (.NET Tool)
-        run: dotnet tool install -g CycloneDX
+      - name: Install CycloneDX
+        run: dotnet tool install -g CycloneDX.Tool
 
       - name: Add .NET tools to PATH
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
