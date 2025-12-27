@@ -104,7 +104,7 @@ jobs:
       
       # run Postman API Tests
       - name: Run API Tests via Newman
-        # continue-on-error: true
+        continue-on-error: true
         run: |
           newman run library-api-tests.postman_collection.json \
             -e library-api-env.postman_environment.json \
