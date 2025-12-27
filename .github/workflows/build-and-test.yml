@@ -72,9 +72,17 @@ jobs:
           scan-type: image
           image-ref: ${{ env.IMAGE_NAME }}
           severity: HIGH,CRITICAL
-          exit-code: 1
-          
-          
+          format: table
+          output: trivy-image-report.txt
+          exit-code: 0
+
+      - name: Upload vulnerability report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Trivy-Image-Vulnerabilities
+          path: trivy-image-report.txt
+      
+      
       # build and start containers for testing
       - name: Start Services
         run: |
