@@ -18,14 +18,19 @@ jobs:
 
     steps:
       # checkout the repository
-      - name: Install CycloneDX.MSBuild
-        run: dotnet add Library.WebApi/Library.WebApi.csproj package CycloneDX.MSBuild
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Restore dependencies
         run: dotnet restore
-
+        
+        
+        
+        
+      # SECURITY ------ SBOM generation
       - name: Build project & Generate SBOM
-        run: dotnet build Library.WebApi/Library.WebApi.csproj -t:CycloneDX -p:CycloneDXFormat=json
+        working-directory: Library.WebApi
+        run: dotnet build -t:CycloneDX -p:CycloneDXFormat=json
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
