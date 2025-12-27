@@ -1,7 +1,6 @@
 import { test, expect } from '../../fixtures/api-fixtures';
 import { Page } from '@playwright/test';
 import { BookCreatePage } from '../pom/book-create.page';
-import { HomePage } from '../pom/home.page';
 
 test.describe('Create Book page', () => {
 
@@ -11,6 +10,7 @@ test.describe('Create Book page', () => {
         return { createPage };
     }
 
+    // TODO: If author gets delete, update clean to delete authors as well
     test('Create Book page loads and shows main UI elements', async ({ page }) => {
         // Arrange
         const { createPage } = await setup(page);

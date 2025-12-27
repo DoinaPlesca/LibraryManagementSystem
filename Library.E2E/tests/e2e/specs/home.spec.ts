@@ -11,6 +11,7 @@ test.describe('Home page — Books list', () => {
         return { home };
     }
 
+    // TODO: If author gets delete, update clean to delete authors as well
     test('Home page loads and shows main UI elements', async ({ page }) => {
         // Arrange
         const { home } = await setup(page);
