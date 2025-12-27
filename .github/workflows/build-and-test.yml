@@ -85,6 +85,10 @@ jobs:
       
       # build and start containers for testing
       - name: Start Services
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           docker compose -f docker-compose.yml up -d --build
           sleep 15
