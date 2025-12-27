@@ -63,5 +63,7 @@ jobs:
       - name: Verify Docker Image Signature
         run: |
           cosign verify \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/CD - Build & Push Secure Image.yml@refs/heads/main" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
              ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
       
