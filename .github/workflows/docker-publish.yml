@@ -91,10 +91,13 @@ jobs:
       
       # SECURITY ----- Verify signature
       - name: Verify Docker image signature
+        env:
+          COSIGN_LOG_LEVEL: debug
         run: |
           set -x
           printf "%s" "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
-          cosign verify --key cosign.pub \
-            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
-      
+
+          cosign verify \
+            --key cosign.pub \
+            index.docker.io/${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
       
