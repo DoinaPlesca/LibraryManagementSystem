@@ -171,9 +171,10 @@ jobs:
 
 
     # SECURITY ----- Verify signature
-    - name: Verify Docker Image Signature
+    - name: Verify Docker image signature 
       run: |
         cosign verify \
-            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
-
+          --certificate-identity-regexp "^https://github.com/${{ github.repository }}/.*$" \
+          --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+          ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
+    
