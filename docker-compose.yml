@@ -1,22 +1,36 @@
-version: "3.9"
+version: "2.4"
 
 services:
   postgres:
-    image: postgres:14
+    image: postgres:14.11
     container_name: library_postgres
     restart: unless-stopped
     ports:
       - "5432:5432"
-    #    env_file:
-    #      - .env
+  
+
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      
     networks:
       - library_network
     volumes:
-      - /var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+      
+  # SECURITY: resource limits
+    mem_limit: 512m
+    cpus: 0.7
+    
+    # SECURITY: health check
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
 
   webapi:
     build:
@@ -24,8 +38,11 @@ services:
       dockerfile: Library.WebApi/Dockerfile
     container_name: library_webapi
     restart: unless-stopped
+    
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - DB_CONNECTION_STRING=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
@@ -33,11 +50,30 @@ services:
       - "5000:8080"
     networks:
       - library_network
+    
+    # SECURITY: resource limits
+    mem_limit: 256m
+    cpus: 0.5
+
+    # SECURITY: read only root filesystem to prevents tampering
+    read_only: true
+
+    # SECURITY: drop unnecessary Linux capabilities
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE  # allow binding to port
+
+    # SECURITY: health check
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s  
 
 volumes:
   postgres_data:
-
-
 
 networks:
   library_network:

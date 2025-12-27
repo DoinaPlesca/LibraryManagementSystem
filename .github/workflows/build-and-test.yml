@@ -1,4 +1,4 @@
-name: CI - Docker Build & Postman Tests
+name: CI - Docker Build & Postman Tests & Security Scan
 
 on:
   push:
@@ -9,42 +9,65 @@ on:
 env:
   IMAGE_NAME: library_webapi
   REPORT_PATH: Reports/LibraryAPITestReport.html
-  API_URL: http://localhost:5000/health
+  SBOM_FILE: sbom.json
 
 
 jobs:
-  build-test-push:
+  build-test-scan:
     runs-on: ubuntu-latest
 
     steps:
       # checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
+        
+      # SECURITY ------ SBOM generation
+      - name: Install CycloneDX
+        run: dotnet tool install -g CycloneDX
 
-      # set up Docker Buildx
+      - name: Generate SBOM
+        run: cyclonedx . -o $SBOM_FILE
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: SBOM
+          path: ${{ env.SBOM_FILE }}
+      
+      # SECURITY ------ dependency vulnerability scan
+      - name: Install Trivy
+        run: sudo apt-get install -y wget && \
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.48.1_Linux-64bit.deb && \
+          sudo dpkg -i trivy_0.48.1_Linux-64bit.deb
+
+      - name: Run Trivy FS Scan
+        run: trivy fs --exit-code 0 --severity HIGH,CRITICAL .
+
+      
+      # SECURITY ------ Docker build
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # log in to Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME -f Library.WebApi/Dockerfile .
+
+      # SECURITY ------ Docker image scan
+      - name: Run Trivy Image Scan
+        run: trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME
+
+      # SECURITY ------ Fail- gate ,for block the release if image have vulnerability
+      - name: Fail if HIGH or CRITICAL vulnerabilities exist
+        run: trivy image --exit-code 1 --severity HIGH,CRITICAL $IMAGE_NAME
       
-      # build and start services
-      - name: Build and start services
+      
+      # build and start containers for testing
+      - name: Start Services
         run: |
           docker compose -f docker-compose.yml up -d --build
-          echo "Waiting for API to be ready..."
-          sleep 20
-        env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          sleep 15
+       
       
-      
-      # innstall Newman CLI
+      #  API TESTS - install Newman CLI
       - name: Install Newman and reporters
         run: npm install -g newman newman-reporter-htmlextra
       
@@ -54,23 +77,13 @@ jobs:
       
       # run Postman API Tests
       - name: Run API Tests via Newman
-        continue-on-error: true
+        # continue-on-error: true
         run: |
-          echo "Running Newman tests..."
-          set -x   # debug: show every command that runs
           newman run library-api-tests.postman_collection.json \
             -e library-api-env.postman_environment.json \
             -r htmlextra \
             --reporter-htmlextra-export $REPORT_PATH \
-            --verbose \
-            || echo "NEWMAN ERROR: $?"
-          echo "Newman finished with exit code $?"
 
-      - name: Debug Reports folder
-        run: |
-          echo "Listing Reports folder:"
-          ls -l Reports
-      
       # upload HTML report
       - name: Upload API Test Report
         uses: actions/upload-artifact@v4
@@ -78,11 +91,9 @@ jobs:
           name: LibraryAPI-Newman-Report
           path: Reports/
       
-      
-      
       # stop and remove container
       - name: Stop and clean up containers
         if: always()
-        run: docker stop library_webapi && docker rm library_webapi
+        run: docker compose down
 
   
