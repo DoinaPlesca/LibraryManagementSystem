@@ -24,19 +24,10 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
         
-        
-        
-        
-      # SECURITY ------ SBOM generation
-      - name: Build project & Generate SBOM
-        working-directory: Library.WebApi
-        run: dotnet build -t:CycloneDX -p:CycloneDXFormat=json
-
-      - name: Upload SBOM
-        uses: actions/upload-artifact@v4
-        with:
-          name: SBOM
-          path: Library.WebApi/bin/**/bom.json
+      - name: Build application
+        run: dotnet build Library.WebApi/Library.WebApi.csproj --no-restore
+      
+   
       
       # SECURITY ------ dependency vulnerability scan
       - name: Install Trivy
@@ -57,13 +48,21 @@ jobs:
       - name: Build Docker image
         run: docker build -t $IMAGE_NAME -f Library.WebApi/Dockerfile .
 
-      # SECURITY ------ Docker image scan
-      - name: Run Trivy Image Scan
-        run: trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME
 
-      # SECURITY ------ Fail- gate ,for block the release if image have vulnerability
-      - name: Fail if HIGH or CRITICAL vulnerabilities exist
-        run: trivy image --exit-code 1 --severity HIGH,CRITICAL $IMAGE_NAME
+     # SECURITY ----- SBOM from docker image 
+      - name: Generate SBOM (CycloneDX)
+        run: trivy image --format cyclonedx --output $SBOM_FILE $IMAGE_NAME
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: SBOM
+          path: $SBOM_FILE
+          
+          
+      # SECURITY ------ Docker image scan
+      - name: Scan Docker image
+        run: trivy image --severity HIGH,CRITICAL --exit-code 1 $IMAGE_NAME
       
       
       # build and start containers for testing
