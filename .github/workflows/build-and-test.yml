@@ -32,7 +32,7 @@ jobs:
         run: cyclonedx --version
         
       - name: Generate SBOM
-        run: cyclonedx . -o $SBOM_FILE --format json
+        run: trivy fs . --format cyclonedx --output $SBOM_FILE
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
