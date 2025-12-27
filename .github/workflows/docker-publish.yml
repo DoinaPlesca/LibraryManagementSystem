@@ -41,6 +41,15 @@ jobs:
           file: ./Library.WebApi/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi:latest
+
+      - name: Debug image digest
+        run: |
+          echo "----------------------------------------"
+          echo "Docker image digest:"
+          echo "${{ steps.build.outputs.digest }}"
+          echo "----------------------------------------"
+      
+      
       
       # SECURITY ----- Install Cosign
       - name: Install Cosign
@@ -49,6 +58,7 @@ jobs:
             -o cosign
           chmod +x cosign
           sudo mv cosign /usr/local/bin/cosign
+          cosign version
 
       - name: Login to Docker Hub for Cosign
         run: |
@@ -61,16 +71,29 @@ jobs:
       - name: Sign Docker image
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_LOG_LEVEL: debug
         run: |
+          set -x
           printf "%s" "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-          cosign sign --yes --key cosign.key \
+          cosign sign --yes 
+          --key cosign.key \
+          ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
+
+      - name: Wait for Docker Hub consistency
+        run: sleep 10
+        
+      - name: Debug Cosign signature location
+        env:
+          COSIGN_LOG_LEVEL: debug
+        run: |
+          cosign triangulate \
             ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
-      
       
       
       # SECURITY ----- Verify signature
       - name: Verify Docker image signature
         run: |
+          set -x
           printf "%s" "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
           cosign verify --key cosign.pub \
             ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
