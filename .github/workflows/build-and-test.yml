@@ -31,7 +31,7 @@ jobs:
       
       # SECURITY ------ dependency vulnerability scan
       - name: Trivy filesystem scan dependencies & configs
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
           scan-ref: .
@@ -51,7 +51,7 @@ jobs:
 
      # SECURITY ----- SBOM from docker image 
       - name: Generate SBOM (CycloneDX)
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@master
         with:
           scan-type: image
           image-ref: ${{ env.IMAGE_NAME }}
@@ -67,7 +67,7 @@ jobs:
           
       # SECURITY ------ Docker image scan
       - name: Scan Docker image
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@master
         with:
           scan-type: image
           image-ref: ${{ env.IMAGE_NAME }}
