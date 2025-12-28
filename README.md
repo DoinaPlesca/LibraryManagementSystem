@@ -1,4 +1,4 @@
-# Library Management System
+## Library Management System
 
 A RESTful Web API for managing a digital library , including **Books**, **Authors**, and **Borrowing Records**.
 
@@ -6,7 +6,7 @@ This project includes full **API automation testing with Postman & Newman**, and
 
 ---
 
-## API Testing with Postman & Newman
+### API Testing with Postman & Newman
 
 This project includes automated API tests for all endpoints (**Books**, **Authors**, and **Borrow**).
 
@@ -35,7 +35,7 @@ This project includes automated API tests for all endpoints (**Books**, **Author
    ```bash
    docker compose up -d
 ````
-
+---
 ### Run the tests using Newman
 
    ```bash
@@ -44,48 +44,67 @@ This project includes automated API tests for all endpoints (**Books**, **Author
    -r htmlextra \
    --reporter-htmlextra-export Reports/LibraryAPITestReport.html
    ````
-   
-### Once the tests finish, open the report:
+ ---  
+### Open the report:
   ```bash
    start Reports/LibraryAPITestReport.html  
    ````
 
-
-
 All generated reports are saved in the Reports/ folder.
 Open LibraryAPITestReport.html in any browser to view detailed results (passed, failed, response time, etc.).
-
+---
 
 ### CI/CD Pipeline (GitHub Actions)
 
-Two automated workflows are configured in .github/workflows:
+A secure CI/CD workflow is defined in:
 
-#### CI – Docker Compose & API Tests
 
 ````File: .github/workflows/build-and-test.yml````
 
 This workflow runs on every push or pull request to **main**.
 
-**It:**
+---
 
-1. Builds and starts the API and Postgres containers using Docker Compose
+### **CI + CD – Build, Scan, Sign & Verify**
 
-3. Runs all Postman tests automatically with Newman
+The pipeline performs the following stages:
 
-5. Generates a detailed HTML report
+##### Continuous Integration (CI)
+1. Restore and build the .NET Web API
+2. Filesystem dependency scan using Trivy
+3. Build and push the Docker image to Docker Hub
+4. Generate a Software Bill of Materials (SBOM) in CycloneDX format
+5. Scan the Docker image for HIGH and CRITICAL vulnerabilities
+6. Start services with Docker Compose
+7. Execute automated API tests using Newman
+8. Shut down containers after test execution
 
-7. Uploads the report as a downloadable artifact in GitHub Actions
+##### Continuous Delivery (CD)
 
-#### CD – Build & Push Docker Image
+1. Sign the Docker image using Cosign and a private key
+2. Verify the image signature to ensure image integrity and authenticity
 
-````File: .github/workflows/docker-publish.yml````
+---
 
-This workflow runs only after the CI tests pass successfully.
+### Security Features
 
-**It:**
+The pipeline implements several supply-chain security best practices:
 
-1. Builds the Docker image for the Web API
+1. Minimal GitHub permissions
+3. Dependency and image vulnerability scanning (Trivy)
+5. SBOM generation (CycloneDX)
+7. Immutable image digest usage
+9. Container image signing and verification (Cosign)
 
-3. Pushes it to Docker Hub under repository
+These steps ensure that only verified and trusted container images are produced and published.
 
-5. Tags it as both latest and with the current build number
+---
+### Docker Image
+
+The Web API Docker image is published to Docker Hub under:
+````bash
+<DOCKER_USERNAME>/librarymanagementsystem-webapi:latest
+
+````
+
+Images are scanned, signed, and verified automatically before release.
