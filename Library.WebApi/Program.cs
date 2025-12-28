@@ -58,8 +58,10 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
-
+builder.Services.AddHealthChecks();
 var app = builder.Build();
+
+app.MapHealthChecks("/api/health");
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -77,7 +79,7 @@ using (var scope = app.Services.CreateScope())
 
 
 app.UseCors("AllowAll");
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.MapControllers();
 
