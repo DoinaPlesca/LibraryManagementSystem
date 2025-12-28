@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title id="home-title">Library – Books</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-button id="home-add-book-btn" routerLink="/books/new" color="primary">
+    Add New Book
+  </ion-button>
+
+  <ion-button id="home-reload-btn" (click)="loadBooks()">
+    Reload from API
+  </ion-button>
+
+  <ion-button id="home-view-borrows-btn" routerLink="/borrows" color="medium">
+    View My Borrows
+  </ion-button>
+
+  <ion-spinner id="home-loading" *ngIf="loading">
+  </ion-spinner>
+
+  <ion-text id="home-error" color="danger" *ngIf="error">
+    <p>{{ error }}</p>
+  </ion-text>
+
+  <ion-list id="home-books-list" *ngIf="!loading && books.length">
+
+    <ion-item *ngFor="let book of books; let i = index" [id]="'home-book-item-' + i" [routerLink]="['/books', book.id]">
+
+      <ion-label>
+        <h2 [id]="'home-book-title-' + i">{{ book.title }}</h2>
+        <p [id]="'home-book-author-' + i">Author: {{ book.authorName }}</p>
+        <p [id]="'home-book-genre-' + i">Genre: {{ book.genre }}</p>
+        <p [id]="'home-book-copies-' + i">
+          Available copies: {{ book.availableCopies }}
+        </p>
+      </ion-label>
+    </ion-item>
+
+  </ion-list>
+
+  <p id="home-empty" *ngIf="!loading && !books.length && !error">
+    No books found.
+  </p>
+
+</ion-content>

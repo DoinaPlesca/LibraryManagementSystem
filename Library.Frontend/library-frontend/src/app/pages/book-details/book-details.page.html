@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Book Details</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-spinner
+    id="book-details-loading"
+    *ngIf="loading">
+  </ion-spinner>
+
+  <ion-text
+    id="book-details-error"
+    color="danger"
+    *ngIf="error">
+    <p>{{ error }}</p>
+  </ion-text>
+
+  <ion-card
+    id="book-details-card"
+    *ngIf="book && !loading">
+
+    <ion-card-header>
+      <ion-card-title id="book-details-title">
+        {{ book.title }}
+      </ion-card-title>
+      <ion-card-subtitle id="book-details-author">
+        {{ book.authorName }}
+      </ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p id="book-details-genre">
+        <strong>Genre:</strong> {{ book.genre }}
+      </p>
+      <p id="book-details-copies">
+        <strong>Available copies:</strong> {{ book.availableCopies }}
+      </p>
+    </ion-card-content>
+
+  </ion-card>
+
+  <ion-list *ngIf="book && !loading">
+    <ion-item>
+      <ion-label position="stacked" for="borrow-username-input">
+        User Name
+      </ion-label>
+      <ion-input
+        id="borrow-username-input"
+        [(ngModel)]="borrowUserName"
+        name="borrowUserName"
+        placeholder="Enter your name">
+      </ion-input>
+    </ion-item>
+  </ion-list>
+
+  <ion-button
+    id="borrow-book-btn"
+    expand="block"
+    (click)="borrowBook()"
+    [disabled]="borrowing || !book || book.availableCopies <= 0">
+    {{ borrowing ? 'Processing...' : 'Borrow Book' }}
+  </ion-button>
+
+  <ion-button
+    id="return-book-btn"
+    expand="block"
+    color="medium"
+    (click)="returnBook()"
+    [disabled]="borrowing || !lastBorrow">
+    Return This Book
+  </ion-button>
+
+  <ion-button
+    id="delete-book-btn"
+    expand="block"
+    color="danger"
+    (click)="deleteBook()"
+    [disabled]="deleting || loading || !book">
+    {{ deleting ? 'Deleting...' : 'Delete Book' }}
+  </ion-button>
+
+  <ion-button
+    id="edit-book-btn"
+    expand="block"
+    color="primary"
+    *ngIf="book"
+    [routerLink]="['/books', book.id, 'edit']">
+    Edit Book
+  </ion-button>
+
+  <ion-button
+    id="back-to-list-btn"
+    expand="block"
+    routerLink="/home">
+    Back to list
+  </ion-button>
+
+</ion-content>

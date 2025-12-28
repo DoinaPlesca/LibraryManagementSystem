@@ -1,0 +1,80 @@
+﻿<ion-header>
+  <ion-toolbar>
+    <ion-title>Add New Book</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-text
+    id="book-create-error"
+    color="danger"
+    *ngIf="error">
+    <p>{{ error }}</p>
+  </ion-text>
+
+  <ion-list>
+
+    <ion-item>
+      <ion-label position="stacked" for="book-title-input">Title</ion-label>
+      <ion-input
+        id="book-title-input"
+        [(ngModel)]="newBook.title"
+        name="title">
+      </ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked" for="book-genre-input">Genre</ion-label>
+      <ion-input
+        id="book-genre-input"
+        [(ngModel)]="newBook.genre"
+        name="genre">
+      </ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked" for="book-copies-input">Available Copies</ion-label>
+      <ion-input
+        id="book-copies-input"
+        type="number"
+        [(ngModel)]="newBook.availableCopies"
+        name="availableCopies">
+      </ion-input>
+    </ion-item>
+
+    <ion-button
+      id="book-add-author-btn"
+      routerLink="/authors/new"
+      size="small"
+      color="medium">
+      Add new author
+    </ion-button>
+
+    <ion-item>
+      <ion-label position="stacked" for="book-author-select">Author</ion-label>
+      <ion-select
+        id="book-author-select"
+        [(ngModel)]="newBook.authorId"
+        name="authorId"
+        interface="popover"
+        [disabled]="loadingAuthors">
+        <ion-select-option
+          *ngFor="let author of authors"
+          [value]="author.id">
+          {{ author.name }} ({{ author.nationality }})
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+  </ion-list>
+
+  <ion-button
+    id="book-save-btn"
+    expand="block"
+    (click)="saveBook()"
+    [disabled]="submitting || loadingAuthors">
+    {{ submitting ? 'Saving...' : 'Save Book' }}
+  </ion-button>
+
+</ion-content>
