@@ -108,15 +108,15 @@ jobs:
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
 
-      - name: Run API Tests
+      - name: Run API Tests via Newman (DEBUG)
         continue-on-error: true
         run: |
-          mkdir -p Reports
           newman run library-api-tests.postman_collection.json \
             -e library-api-env.postman_environment.json \
-            -r htmlextra \
-            --reporter-htmlextra-export $REPORT_PATH
-
+            --verbose \
+            --reporters cli
+      
+      
       - name: Stop containers
         if: always()
         run: docker compose down
