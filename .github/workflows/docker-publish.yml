@@ -1,4 +1,4 @@
-name: CD - Build & Push Secure Image
+name: CD - Sign & Verify Docker Image
 
 on:
   workflow_run:
@@ -6,50 +6,52 @@ on:
     types:
       - completed
 
-
 permissions:
   contents: read
+  actions: read
 
 env:
   IMAGE_REF: ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi
-  
+
 jobs:
-  build-and-push:
+  sign-and-verify:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
+      # Download digest from CI run
       - name: Download image digest artifact
         uses: actions/download-artifact@v4
         with:
           name: image-digest
           path: .
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Read image digest
-        id: digest
         run: |
           DIGEST=$(cat image-digest.txt)
           echo "DIGEST=$DIGEST" >> $GITHUB_ENV
           echo "Image digest from CI: $DIGEST"
 
-     
-     
-      
-      # SECURITY ----- Install Cosign
+
+      # Install Cosign
       - name: Install Cosign
         run: |
-            curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o cosign
-            chmod +x cosign
-            sudo mv cosign /usr/local/bin/cosign
-            cosign version
+          curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o cosign
+          chmod +x cosign
+          sudo mv cosign /usr/local/bin/cosign
+          cosign version
 
+      # Login to Docker Hub
       - name: Login to Docker Hub for Cosign
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | \
             cosign login docker.io \
-              -u ${{ secrets.DOCKER_USERNAME }} \
+              -u "${{ secrets.DOCKER_USERNAME }}" \
               --password-stdin
-          
+
+      # Sign image 
       - name: Sign Docker image
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
@@ -57,28 +59,34 @@ jobs:
         run: |
           set -x
           printf "%s" "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-          
-          cosign sign --yes --key cosign.key \
-            ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi@${{ steps.build.outputs.digest }}
-      
+
+          cosign sign --yes \
+            --key cosign.key \
+            index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}
+
+    
+      # Wait for registry consistency
       - name: Wait for Docker Hub consistency
-        run: sleep 10
-        
+        run: sleep 30
+
+     
+      # Confirm signature exists
       - name: Confirm signature presence
         env:
           COSIGN_LOG_LEVEL: debug
         run: |
-            cosign triangulate \
-              index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}
-      
-      # SECURITY ----- Verify signature
+          cosign triangulate \
+            index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}
+
+    
+      # Verify signature
       - name: Verify Docker image signature
         env:
           COSIGN_LOG_LEVEL: debug
         run: |
-            set -x
-            printf "%s" "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
-            
-            cosign verify \
-              --key cosign.pub \
-              index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}
+          set -x
+          printf "%s" "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
+
+          cosign verify \
+            --key cosign.pub \
+            index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}
