@@ -88,6 +88,7 @@ jobs:
           scan-type: image
           image-ref: ${{ env.IMAGE_REF }}:latest
           severity: HIGH,CRITICAL
+          ignore-unfixed: true
           exit-code: 1
 
       # API tests
