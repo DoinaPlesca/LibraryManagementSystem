@@ -97,6 +97,13 @@ jobs:
         run: |
           docker compose up -d
           sleep 15
+          
+          
+      - name: Debug API availability
+        run: |
+          curl -v http://localhost:5000/api/health || true
+
+
 
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
