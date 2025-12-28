@@ -1,4 +1,4 @@
-name: CI - Docker Build & Postman Tests & Security Scan
+name: CI + CD - Build, Scan, Sign & Verify
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write
+  id-token: write  
 
 env:
   IMAGE_REF: ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi
@@ -16,11 +16,15 @@ env:
   SBOM_FILE: sbom.json
 
 jobs:
+
   build-test-scan:
     runs-on: ubuntu-latest
 
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+
     steps:
-      # Checkout repository
+      # Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -31,7 +35,7 @@ jobs:
       - name: Build application
         run: dotnet build Library.WebApi/Library.WebApi.csproj --no-restore
 
-      # Login once (for build + Trivy)
+      # Docker login
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -39,7 +43,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # Dependency scan
-      - name: Trivy filesystem scan dependencies & configs
+      - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
@@ -47,7 +51,7 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
-      # Docker build & push
+      # Docker build & push 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -60,20 +64,11 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_REF }}:latest
 
-      # Digest handling
+      # Debug digest
       - name: Debug image digest
         run: |
-          echo "Image pushed with digest:"
+          echo "Image digest:"
           echo "${{ steps.build.outputs.digest }}"
-
-      - name: Save image digest
-        run: echo "${{ steps.build.outputs.digest }}" > image-digest.txt
-
-      - name: Upload image digest artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-digest
-          path: image-digest.txt
 
       # SBOM
       - name: Generate SBOM (CycloneDX)
@@ -84,12 +79,6 @@ jobs:
           format: cyclonedx
           output: ${{ env.SBOM_FILE }}
 
-      - name: Upload SBOM
-        uses: actions/upload-artifact@v4
-        with:
-          name: SBOM
-          path: ${{ env.SBOM_FILE }}
-
       # Image vulnerability scan
       - name: Scan Docker image
         uses: aquasecurity/trivy-action@master
@@ -97,17 +86,9 @@ jobs:
           scan-type: image
           image-ref: ${{ env.IMAGE_REF }}:latest
           severity: HIGH,CRITICAL
-          format: table
-          output: trivy-image-report.txt
           exit-code: 0
 
-      - name: Upload vulnerability report
-        uses: actions/upload-artifact@v4
-        with:
-          name: Trivy-Image-Vulnerabilities
-          path: trivy-image-report.txt
-
-      # Start services for tests
+      # API tests
       - name: Start Services
         env:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
@@ -117,28 +98,69 @@ jobs:
           docker compose up -d
           sleep 15
 
-      # API tests
-      - name: Install Newman and reporters
+      - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
 
-      - name: Cleanup old reports
-        run: rm -rf Reports && mkdir Reports
-
-      - name: Run API Tests via Newman
+      - name: Run API Tests
         continue-on-error: true
         run: |
+          mkdir -p Reports
           newman run library-api-tests.postman_collection.json \
             -e library-api-env.postman_environment.json \
             -r htmlextra \
             --reporter-htmlextra-export $REPORT_PATH
 
-      - name: Upload API Test Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: LibraryAPI-Newman-Report
-          path: Reports/
-
-      # Cleanup
-      - name: Stop and clean up containers
+      - name: Stop containers
         if: always()
         run: docker compose down
+
+
+  sign-and-verify:
+    needs: build-test-scan
+    runs-on: ubuntu-latest
+
+    env:
+      DIGEST: ${{ needs.build-test-scan.outputs.image-digest }}
+
+    steps:
+      # Install Cosign
+      - name: Install Cosign
+        run: |
+          curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o cosign
+          chmod +x cosign
+          sudo mv cosign /usr/local/bin/cosign
+          cosign version
+
+      # Login for signature push
+      - name: Login to Docker Hub for Cosign
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | \
+            cosign login docker.io \
+              -u "${{ secrets.DOCKER_USERNAME }}" \
+              --password-stdin
+
+      # Sign image 
+      - name: Sign Docker image
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: |
+          set -x
+          printf "%s" "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+
+          cosign sign --yes \
+            --key cosign.key \
+            index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}
+
+      # Wait for registry consistency
+      - name: Wait for Docker Hub consistency
+        run: sleep 30
+
+      # Verify signature
+      - name: Verify Docker image signature
+        run: |
+          set -x
+          printf "%s" "${{ secrets.COSIGN_PUBLIC_KEY }}" > cosign.pub
+
+          cosign verify \
+            --key cosign.pub \
+            index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}
