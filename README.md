@@ -4,7 +4,7 @@ A RESTful Web API for managing a digital library , including **Books**, **Author
 
 This project includes full **API automation testing with Postman & Newman**, and a complete **CI/CD pipeline** using **GitHub Actions** and **Docker**.
 
----
+
 
 ### API Testing with Postman & Newman
 
@@ -15,19 +15,18 @@ This project includes automated API tests for all endpoints (**Books**, **Author
 - **Newman** — for automated test execution via CLI
 - **htmlextra** — for generating detailed HTML test reports
 
----
+
 
 ### Files Used
 - `library-api-tests.postman_collection.json` → all API requests and assertions
 - `library-api-env.postman_environment.json` → contains variables like `baseUrl` and `userName`
 
----
+
 
 ### Requirements
 - Node.js and npm installed
 - Docker running (for API and PostgreSQL containers)
 
----
 
 ### Run Tests Locally
 
@@ -35,7 +34,7 @@ This project includes automated API tests for all endpoints (**Books**, **Author
    ```bash
    docker compose up -d
 ````
----
+
 ### Run the tests using Newman
 
    ```bash
@@ -52,7 +51,7 @@ This project includes automated API tests for all endpoints (**Books**, **Author
 
 All generated reports are saved in the Reports/ folder.
 Open LibraryAPITestReport.html in any browser to view detailed results (passed, failed, response time, etc.).
----
+
 
 ### CI/CD Pipeline (GitHub Actions)
 
@@ -63,7 +62,7 @@ A secure CI/CD workflow is defined in:
 
 This workflow runs on every push or pull request to **main**.
 
----
+
 
 ### **CI + CD – Build, Scan, Sign & Verify**
 
@@ -84,7 +83,7 @@ The pipeline performs the following stages:
 1. Sign the Docker image using Cosign and a private key
 2. Verify the image signature to ensure image integrity and authenticity
 
----
+
 
 ### Security Features
 
@@ -98,7 +97,7 @@ The pipeline implements several supply-chain security best practices:
 
 These steps ensure that only verified and trusted container images are produced and published.
 
----
+
 ### Docker Image
 
 The Web API Docker image is published to Docker Hub under:
