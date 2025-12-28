@@ -526,7 +526,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"userName\": \"TestUser\",\r\n  \"bookId\": 4\r\n}\r\n\r\n",
+							"raw": "{\r\n  \"userName\": \"TestUser\",\r\n  \"bookId\": {{bookId}}\r\n}\r\n\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -534,12 +534,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/borrow/borrow",
+							"raw": "{{baseUrl}}/Borrow/borrow",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"borrow",
+								"Borrow",
 								"borrow"
 							]
 						}
@@ -607,12 +607,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/borrow/return/{{borrowId}}",
+							"raw": "{{baseUrl}}/Borrow/return/{{borrowId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"borrow",
+								"Borrow",
 								"return",
 								"{{borrowId}}"
 							]
@@ -679,12 +679,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/borrow/user/{{userName}}",
+							"raw": "{{baseUrl}}/Borrow/user/{{userName}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"borrow",
+								"Borrow",
 								"user",
 								"{{userName}}"
 							]
