@@ -31,7 +31,7 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 # OCI metadata labels 
-LABEL org.opencontainers.image.source="https://github.com/<YOUR-REPO>"
+LABEL org.opencontainers.image.source="https://github.com/DoinaPlesca/LibraryManagementSystem/tree/main"
 LABEL org.opencontainers.image.description="Library Management System API - Secure CRA Build"
 LABEL org.opencontainers.image.version="1.0"
 

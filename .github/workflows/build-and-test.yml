@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [ main ]
 
+# SECURITY ----- minimal permission for secure Ci/CD
 permissions:
   contents: read
   id-token: write  
@@ -14,6 +15,7 @@ env:
   IMAGE_REF: ${{ secrets.DOCKER_USERNAME }}/librarymanagementsystem-webapi
   REPORT_PATH: Reports/LibraryAPITestReport.html
   SBOM_FILE: sbom.json
+  # SECURITY ----- software bill of material;  contains all software and dependencies
 
 jobs:
 
@@ -24,7 +26,7 @@ jobs:
       image-digest: ${{ steps.build.outputs.digest }}
 
     steps:
-      # Checkout
+      # Checkout 
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -42,7 +44,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Dependency scan
+      # SECURITY ----- Dependency vulnerability scan
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@master
         with:
@@ -65,7 +67,7 @@ jobs:
           tags: ${{ env.IMAGE_REF }}:latest
 
     
-      # SBOM
+      # SECURITY -----SBOM generation (CycloneDX)
       - name: Generate SBOM
         uses: aquasecurity/trivy-action@master
         with:
@@ -81,7 +83,7 @@ jobs:
           path: sbom.json
 
 
-      # Image vulnerability scan
+      # SECURITY ----- Image vulnerability scanning
       - name: Scan Docker image
         uses: aquasecurity/trivy-action@master
         with:
@@ -104,7 +106,8 @@ jobs:
 
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
-
+      
+      # Automated API tests
       - name: Run API Tests via Newman
         run: |
           newman run library-api-tests.postman_collection.json \
@@ -120,12 +123,13 @@ jobs:
   sign-and-verify:
     needs: build-test-scan
     runs-on: ubuntu-latest
-
+     
+     # SECURITY ---- Immutable image digest
     env:
       DIGEST: ${{ needs.build-test-scan.outputs.image-digest }}
 
     steps:
-      # Install Cosign
+      # SECURITY ----- Install Cosign, verify container images
       - name: Install Cosign
         run: |
           curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o cosign
@@ -133,7 +137,7 @@ jobs:
           sudo mv cosign /usr/local/bin/cosign
           cosign version
 
-      # Login for signature push
+      # SECURITY ----- Login for signature push
       - name: Login to Docker Hub for Cosign
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | \
@@ -141,7 +145,7 @@ jobs:
               -u "${{ secrets.DOCKER_USERNAME }}" \
               --password-stdin
 
-      # Sign image 
+      # SECURITY ----- Sign Docker image
       - name: Sign Docker image
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
@@ -153,11 +157,10 @@ jobs:
             --key cosign.key \
             index.docker.io/${{ env.IMAGE_REF }}@${{ env.DIGEST }}
 
-      # Wait for registry consistency
       - name: Wait for Docker Hub consistency
         run: sleep 30
 
-      # Verify signature
+      # SECURITY ----- Verify signature signature
       - name: Verify Docker image signature
         run: |
           set -x
